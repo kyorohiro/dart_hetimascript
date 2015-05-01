@@ -65,7 +65,7 @@ List<String> keyword3 = [
   "\\\"",
   "\\'"
 ];
-/*
+
 //
 List<String> comment = ["--[", "]"];
 
@@ -130,4 +130,3 @@ class Lexer {
 }
 
 class Token {}
-*/
