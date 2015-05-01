@@ -5,17 +5,8 @@ library dart_hetimascript.test;
 
 import 'package:unittest/unittest.dart';
 import 'package:hetimascript/hetimascript.dart';
+import 'test_hetimascript_00.dart' as hetimascript_00;
 
 main() {
-  group('A group of tests', () {
-    Awesome awesome;
-
-    setUp(() {
-      awesome = new Awesome();
-    });
-
-    test('First Test', () {
-      expect(awesome.isAwesome, isTrue);
-    });
-  });
+  hetimascript_00.script00();
 }
