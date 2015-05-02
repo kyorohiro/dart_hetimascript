@@ -45,4 +45,27 @@ void script00() {
   });
 }
 
+void script01() {
+  group('script02', () {
+    test('test1', () {
+     String sc = """--test\n--test2\r\n """;
+     heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
+     Lexer lexer = new Lexer.create(b);
+     return lexer.lexer().then((Token t) {
+       expect(t.kind, Token.comment);
+       return lexer.lexer();
+     }).then((Token t) {
+       expect(t.kind, Token.crlf);  
+       return lexer.lexer();
+     }).then((Token t) {
+       expect(t.kind, Token.comment);
+       return lexer.lexer();
+     }).then((Token t) {
+       expect(t.kind, Token.crlf);  
+       return lexer.lexer();
+     });
+    });
+  });
+}
+
 //commentLong() 
