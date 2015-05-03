@@ -62,7 +62,7 @@ class Lexer {
         case 0x0b:
           {
             // " " "\f" "\t" "\v"
-          _parser.pop();
+            _parser.pop();
             completer.complete(new Token(Token.space));
           }
           break;
@@ -70,7 +70,7 @@ class Lexer {
         case 0x0d:
           {
             // "\r" "\n"
-          _parser.pop();
+            _parser.pop();
             completer.complete(new Token(Token.crlf));
           }
           break;
@@ -92,17 +92,16 @@ class Lexer {
           return;
         case 0x5b:
           {
-          _parser.back();
-          _parser.pop();
+            _parser.back();
+            _parser.pop();
             // "["
-            //   _parser.readFromCommand([new hregex.]).then((List<List<int>> v) {
-            longStringA().then((List<int> v){
+            longStringA().then((List<int> v) {
               completer.complete(new Token.fromList(Token.tkString, v));
-            }).catchError((e){
-              return longStringB();
-            }).then((List<int> v) {
-              completer.complete(new Token.fromList(Token.tkString, v));
-            }).catchError((e){
+            }).catchError((e) {
+              return longStringB().then((List<int> v) {
+                completer.complete(new Token.fromList(Token.tkString, v));
+              });
+            }).catchError((e) {
               completer.complete(new Token(Token.tkOpeingBracket));
             });
           }
@@ -148,9 +147,7 @@ class Lexer {
     async.Completer<List<int>> completer = new async.Completer();
     _parser.push();
     _parser.nextString("--").then((String v) {
-      return _parser
-          .nextBytePatternByUnmatch(new heti.EasyParserIncludeMatcher([_cv('\n'), _cv('\r')]), false)
-          .then((List<int> v) {
+      return _parser.nextBytePatternByUnmatch(new heti.EasyParserIncludeMatcher([_cv('\n'), _cv('\r')]), false).then((List<int> v) {
         completer.complete(v);
       });
     }).catchError((e) {

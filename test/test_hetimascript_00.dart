@@ -79,16 +79,20 @@ void script01() {
     });
     
     test('script03', () {
-     String sc = """[[test1]][==[test2]==]""";
+     String sc = """[[test1]][==[test2]==][""";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
      Lexer lexer = new Lexer.create(b);
      return lexer.lexer().then((Token v) {
-       expect(v, "test1");
+       expect(conv.UTF8.decode(v.value), "test1");
        return lexer.lexer();
      }).then((Token v) {
-       expect(v, "test2");
+       expect(conv.UTF8.decode(v.value), "test2");
+       return lexer.lexer();
+     }).then((Token v) {
+       expect(v.kind, Token.tkOpeingBracket);
      });
     });
+
   });
 }
 
