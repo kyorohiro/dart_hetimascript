@@ -21,6 +21,8 @@ class Token {
   static const comment = 2;
   static const minus = 3;
   static const crlf = 4;
+  static const tkString = 5;
+  static const tkOpeingBracket = 6;
   int kind = none;
   List<int> value = [];
   Token(int kind) {
@@ -31,7 +33,7 @@ class Token {
     this.kind = kind;
     this.value = conv.UTF8.encode(text);
   }
-  
+
   Token.fromList(int kind, List<int> text) {
     this.kind = kind;
     this.value = text;
@@ -54,15 +56,21 @@ class Lexer {
     _parser.push();
     _parser.readByte().then((int v) {
       switch (v) {
-        case 0x20:case 0x0c:case 0x09:case 0x0b:
+        case 0x20:
+        case 0x0c:
+        case 0x09:
+        case 0x0b:
           {
             // " " "\f" "\t" "\v"
+          _parser.pop();
             completer.complete(new Token(Token.space));
           }
           break;
-        case 0x0a:case 0x0d:
+        case 0x0a:
+        case 0x0d:
           {
-            // " " "\f" "\t" "\v"
+            // "\r" "\n"
+          _parser.pop();
             completer.complete(new Token(Token.crlf));
           }
           break;
@@ -83,13 +91,22 @@ class Lexer {
           }
           return;
         case 0x5b:
-        {
-          // "["
-       //   _parser.readFromCommand([new hregex.]).then((List<List<int>> v) {
-            
-         // });
-        }
-        break;
+          {
+          _parser.back();
+          _parser.pop();
+            // "["
+            //   _parser.readFromCommand([new hregex.]).then((List<List<int>> v) {
+            longStringA().then((List<int> v){
+              completer.complete(new Token.fromList(Token.tkString, v));
+            }).catchError((e){
+              return longStringB();
+            }).then((List<int> v) {
+              completer.complete(new Token.fromList(Token.tkString, v));
+            }).catchError((e){
+              completer.complete(new Token(Token.tkOpeingBracket));
+            });
+          }
+          break;
         default:
           completer.completeError([]);
       }
@@ -131,7 +148,9 @@ class Lexer {
     async.Completer<List<int>> completer = new async.Completer();
     _parser.push();
     _parser.nextString("--").then((String v) {
-      return _parser.nextBytePatternByUnmatch(new heti.EasyParserIncludeMatcher([_cv('\n'), _cv('\r')]), false).then((List<int> v) {
+      return _parser
+          .nextBytePatternByUnmatch(new heti.EasyParserIncludeMatcher([_cv('\n'), _cv('\r')]), false)
+          .then((List<int> v) {
         completer.complete(v);
       });
     }).catchError((e) {
@@ -140,4 +159,44 @@ class Lexer {
     return completer.future;
   }
 
+  async.Future<List<int>> longStringA() {
+    async.Completer<List<int>> completer = new async.Completer();
+    _parser.push();
+    hregex.RegexBuilder builder = new hregex.RegexBuilder();
+    builder
+        .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("[[")))
+        .push(true)
+        .addRegexLeaf(new hregex.StarPattern.fromCommand(new hregex.UncharacterCommand(conv.UTF8.encode("]]"))))
+        .pop()
+        .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("]]")));
+    _parser.readFromCommand(builder.done()).then((List<List<int>> v) {
+      _parser.pop();
+      completer.complete(v[0]);
+    }).catchError((e) {
+      _parser.back();
+      _parser.pop();
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
+  async.Future<List<int>> longStringB() {
+    async.Completer<List<int>> completer = new async.Completer();
+    _parser.push();
+    hregex.RegexBuilder builder = new hregex.RegexBuilder();
+    builder
+        .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("[==[")))
+        .push(true)
+        .addRegexLeaf(new hregex.StarPattern.fromCommand(new hregex.UncharacterCommand(conv.UTF8.encode("]==]"))))
+        .pop()
+        .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("]==]")));
+    _parser.readFromCommand(builder.done()).then((List<List<int>> v) {
+      _parser.pop();
+      completer.complete(v[0]);
+    }).catchError((e) {
+      _parser.back();
+      _parser.pop();
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
 }

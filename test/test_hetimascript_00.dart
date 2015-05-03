@@ -42,6 +42,18 @@ void script00() {
        expect(v, "test2");
      });
     });
+
+    test('test2', () {
+     String sc = """[[test1]][[test2]]""";
+     heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
+     Lexer lexer = new Lexer.create(b);
+     return lexer.longStringA().then((List<int> v) {
+       expect(conv.UTF8.decode(v), "test1");
+       return lexer.longStringA();
+     }).then((List<int> v) {
+       expect(conv.UTF8.decode(v), "test2");
+     });
+    });
   });
 }
 
@@ -63,6 +75,18 @@ void script01() {
      }).then((Token t) {
        expect(t.kind, Token.crlf);  
        return lexer.lexer();
+     });
+    });
+    
+    test('script03', () {
+     String sc = """[[test1]][==[test2]==]""";
+     heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
+     Lexer lexer = new Lexer.create(b);
+     return lexer.lexer().then((Token v) {
+       expect(v, "test1");
+       return lexer.lexer();
+     }).then((Token v) {
+       expect(v, "test2");
      });
     });
   });
