@@ -41,11 +41,11 @@ class Token {
 class Lexer {
   List<Token> tokenList = [];
   heti.HetimaBuilder _source = null;
-  heti.EasyParser _parser = null;
+  hregex.RegexEasyParser _parser = null;
 
   Lexer.create(heti.HetimaBuilder builder) {
     _source = builder;
-    _parser = new heti.EasyParser(builder);
+    _parser = new hregex.RegexEasyParser(builder);
   }
 
   //
@@ -85,6 +85,9 @@ class Lexer {
         case 0x5b:
         {
           // "["
+       //   _parser.readFromCommand([new hregex.]).then((List<List<int>> v) {
+            
+         // });
         }
         break;
         default:
