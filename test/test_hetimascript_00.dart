@@ -16,21 +16,9 @@ void script00() {
      Lexer lexer = new Lexer.create(b);
      return lexer.commentShort().then((List<int> v) {
        expect(conv.UTF8.decode(v), "test");
-       return lexer.newline();
-     }).then((List<int> v){
-       expect(conv.UTF8.decode(v), "\n");
-       return lexer.commentShort();
-     }).then((List<int> v){
-       expect(conv.UTF8.decode(v), "test2");
-       return lexer.newline();
-     }).then((List<int> v){
-       expect(conv.UTF8.decode(v), "\r\n");
-       return lexer.space();
-     }).then((List<int> v){ 
-       expect(conv.UTF8.decode(v), " ");
      });
     });
-    
+
     test('test2', () {
      String sc = """--[[test1]]--[[test2]]""";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
@@ -54,6 +42,29 @@ void script00() {
        expect(conv.UTF8.decode(v), "test2");
      });
     });
+    
+    test('test3', () {
+     String sc = "\"aa\"\"bb\"";
+     heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
+     Lexer lexer = new Lexer.create(b);
+     return lexer.normalString().then((List<int> v){
+       expect(conv.UTF8.decode(v), "aa");
+       return lexer.normalString();      
+     }).then((List<int> v) {
+       expect(conv.UTF8.decode(v), "bb");       
+     });
+    });
+    
+    test('test3', () {
+     String sc = "\"aabb";
+     heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
+     Lexer lexer = new Lexer.create(b);
+     return lexer.normalString().then((List<int> v){
+       expect(true,false);
+     }).catchError((e){
+       expect(true,true);
+     });
+    });
   });
 }
 
@@ -64,16 +75,16 @@ void script01() {
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
      Lexer lexer = new Lexer.create(b);
      return lexer.lexer().then((Token t) {
-       expect(t.kind, Token.comment);
+       expect(t.kind, Token.tkComment);
        return lexer.lexer();
      }).then((Token t) {
-       expect(t.kind, Token.crlf);  
+       expect(t.kind, Token.tkCrlf);  
        return lexer.lexer();
      }).then((Token t) {
-       expect(t.kind, Token.comment);
+       expect(t.kind, Token.tkComment);
        return lexer.lexer();
      }).then((Token t) {
-       expect(t.kind, Token.crlf);  
+       expect(t.kind, Token.tkCrlf);  
        return lexer.lexer();
      });
     });
