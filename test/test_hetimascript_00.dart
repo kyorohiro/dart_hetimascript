@@ -13,7 +13,7 @@ void script00() {
     test('test1', () {
      String sc = """--test\n--test2\r\n """;
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
-     Lexer lexer = new Lexer.create(b);
+     HetimaLexer lexer = new HetimaLexer.create(b);
      return lexer.commentShort().then((List<int> v) {
        expect(conv.UTF8.decode(v), "test");
      });
@@ -22,7 +22,7 @@ void script00() {
     test('test2', () {
      String sc = """--[[test1]]--[[test2]]""";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
-     Lexer lexer = new Lexer.create(b);
+     HetimaLexer lexer = new HetimaLexer.create(b);
      return lexer.commentLong().then((String v) {
        expect(v, "test1");
        return lexer.commentLong();
@@ -34,7 +34,7 @@ void script00() {
     test('test2', () {
      String sc = """[[test1]][[test2]]""";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
-     Lexer lexer = new Lexer.create(b);
+     HetimaLexer lexer = new HetimaLexer.create(b);
      return lexer.longStringA().then((List<int> v) {
        expect(conv.UTF8.decode(v), "test1");
        return lexer.longStringA();
@@ -46,7 +46,7 @@ void script00() {
     test('test3', () {
      String sc = "\"aa\"\"bb\"";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
-     Lexer lexer = new Lexer.create(b);
+     HetimaLexer lexer = new HetimaLexer.create(b);
      return lexer.normalString().then((List<int> v){
        expect(conv.UTF8.decode(v), "aa");
        return lexer.normalString();      
@@ -58,7 +58,7 @@ void script00() {
     test('test3', () {
      String sc = "\"aabb";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
-     Lexer lexer = new Lexer.create(b);
+     HetimaLexer lexer = new HetimaLexer.create(b);
      return lexer.normalString().then((List<int> v){
        expect(true,false);
      }).catchError((e){
@@ -73,18 +73,18 @@ void script01() {
     test('test1', () {
      String sc = """--test\n--test2\r\n """;
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
-     Lexer lexer = new Lexer.create(b);
-     return lexer.lexer().then((Token t) {
-       expect(t.kind, Token.tkComment);
+     HetimaLexer lexer = new HetimaLexer.create(b);
+     return lexer.lexer().then((HetimaToken t) {
+       expect(t.kind, HetimaToken.tkComment);
        return lexer.lexer();
-     }).then((Token t) {
-       expect(t.kind, Token.tkCrlf);  
+     }).then((HetimaToken t) {
+       expect(t.kind, HetimaToken.tkCrlf);  
        return lexer.lexer();
-     }).then((Token t) {
-       expect(t.kind, Token.tkComment);
+     }).then((HetimaToken t) {
+       expect(t.kind, HetimaToken.tkComment);
        return lexer.lexer();
-     }).then((Token t) {
-       expect(t.kind, Token.tkCrlf);  
+     }).then((HetimaToken t) {
+       expect(t.kind, HetimaToken.tkCrlf);  
        return lexer.lexer();
      });
     });
@@ -92,17 +92,31 @@ void script01() {
     test('script03', () {
      String sc = """[[test1]][==[test2]==][""";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
-     Lexer lexer = new Lexer.create(b);
-     return lexer.lexer().then((Token v) {
+     HetimaLexer lexer = new HetimaLexer.create(b);
+     return lexer.lexer().then((HetimaToken v) {
        expect(conv.UTF8.decode(v.value), "test1");
        return lexer.lexer();
-     }).then((Token v) {
+     }).then((HetimaToken v) {
        expect(conv.UTF8.decode(v.value), "test2");
        return lexer.lexer();
-     }).then((Token v) {
-       expect(v.kind, Token.tkOpeingBracket);
+     }).then((HetimaToken v) {
+       expect(v.kind, HetimaToken.tkOpeingBracket);
      });
     });
+
+    test('script04', () {
+     String sc = "\"abc\"\'xyz\'";
+     heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
+     HetimaLexer lexer = new HetimaLexer.create(b);
+     return lexer.lexer().then((HetimaToken v) {
+       expect(conv.UTF8.decode(v.value), "abc");
+       return lexer.lexer();
+     }).then((HetimaToken v) {
+       expect(conv.UTF8.decode(v.value), "xyz");
+     });
+    });
+
+    
 
   });
 }

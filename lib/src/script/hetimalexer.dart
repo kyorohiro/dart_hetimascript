@@ -15,7 +15,7 @@ List<String> comment = ["--[", "]"];
 ///
 ///
 ///
-class Token {
+class HetimaToken {
   static const tkNone = 0;
   static const tkSpace = 1;
   static const tkComment = 2;
@@ -36,36 +36,38 @@ class Token {
   static const tkTilde = 15;// ~
   static const tkColon = 16; // :
   static const tkDoubleColon = 17; // ::
+  static const tkDot = 18;
+  static const tkConcat = 19; // ..
+  static const tkDots = 20; // ...
+
   int kind = tkNone;
   List<int> value = [];
-  Token(int kind) {
+  HetimaToken(int kind) {
     this.kind = kind;
   }
 
-  Token.fromString(int kind, String text) {
+  HetimaToken.fromString(int kind, String text) {
     this.kind = kind;
     this.value = conv.UTF8.encode(text);
   }
 
-  Token.fromList(int kind, List<int> text) {
+  HetimaToken.fromList(int kind, List<int> text) {
     this.kind = kind;
     this.value = text;
   }
 }
 
-class Lexer {
-  List<Token> tokenList = [];
-  heti.HetimaBuilder _source = null;
+class HetimaLexer {
+  List<HetimaToken> tokenList = [];
   hregex.RegexEasyParser _parser = null;
 
-  Lexer.create(heti.HetimaBuilder builder) {
-    _source = builder;
+  HetimaLexer.create(heti.HetimaBuilder builder) {
     _parser = new hregex.RegexEasyParser(builder);
   }
 
   //
-  async.Future<Token> lexer() {
-    async.Completer<Token> completer = new async.Completer();
+  async.Future<HetimaToken> lexer() {
+    async.Completer<HetimaToken> completer = new async.Completer();
     _parser.push();
     _parser.readByte().then((int v) {
       switch (v) {
@@ -76,7 +78,7 @@ class Lexer {
           {
             // " " "\f" "\t" "\v"
             _parser.pop();
-            completer.complete(new Token(Token.tkSpace));
+            completer.complete(new HetimaToken(HetimaToken.tkSpace));
           }
           break;
         case 0x0a:
@@ -84,7 +86,7 @@ class Lexer {
           {
             // "\r" "\n"
             _parser.pop();
-            completer.complete(new Token(Token.tkCrlf));
+            completer.complete(new HetimaToken(HetimaToken.tkCrlf));
           }
           break;
         case 0x2d:
@@ -93,13 +95,13 @@ class Lexer {
             _parser.back();
             _parser.pop();
             commentLong().then((String comment) {
-              completer.complete(new Token.fromString(Token.tkComment, comment));
+              completer.complete(new HetimaToken.fromString(HetimaToken.tkComment, comment));
             }).catchError((e) {
               return commentShort();
             }).then((List<int> comment) {
-              completer.complete(new Token.fromList(Token.tkComment, comment));
+              completer.complete(new HetimaToken.fromList(HetimaToken.tkComment, comment));
             }).catchError((e) {
-              completer.complete(new Token(Token.tkMinus));
+              completer.complete(new HetimaToken(HetimaToken.tkMinus));
             });
           }
           return;
@@ -110,13 +112,13 @@ class Lexer {
             _parser.pop();
             // "["
             longStringA().then((List<int> v) {
-              completer.complete(new Token.fromList(Token.tkString, v));
+              completer.complete(new HetimaToken.fromList(HetimaToken.tkString, v));
             }).catchError((e) {
               return longStringB().then((List<int> v) {
-                completer.complete(new Token.fromList(Token.tkString, v));
+                completer.complete(new HetimaToken.fromList(HetimaToken.tkString, v));
               });
             }).catchError((e) {
-              completer.complete(new Token(Token.tkOpeingBracket));
+              completer.complete(new HetimaToken(HetimaToken.tkOpeingBracket));
             });
           }
           break;
@@ -126,9 +128,9 @@ class Lexer {
           _parser.pop();
           _parser.readFromCommand((new hregex.RegexBuilder()).addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("=="))).done())
           .then((List<List<int>> v){
-            completer.complete(new Token(Token.tkEqualEqual));
+            completer.complete(new HetimaToken(HetimaToken.tkEqualEqual));
           }).catchError((e){
-            completer.complete(new Token(Token.tkEqual));
+            completer.complete(new HetimaToken(HetimaToken.tkEqual));
           });
 
           break;
@@ -143,12 +145,12 @@ class Lexer {
           .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("<="))).done();
 
           _parser.readFromCommand(leftshift).then((List<List<int>> v){
-            completer.complete(new Token(Token.tkLeftShift));
+            completer.complete(new HetimaToken(HetimaToken.tkLeftShift));
           }).catchError((e){
             _parser.readFromCommand(greterThanEqual).then((List<List<int>> v){
-              completer.complete(new Token(Token.tkLessThanEqualSign));
+              completer.complete(new HetimaToken(HetimaToken.tkLessThanEqualSign));
             }).catchError((e){
-              completer.complete(new Token(Token.tkLessThanSign));
+              completer.complete(new HetimaToken(HetimaToken.tkLessThanSign));
             });
           });
           break;
@@ -163,29 +165,29 @@ class Lexer {
           .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode(">="))).done();
 
           _parser.readFromCommand(leftshift).then((List<List<int>> v){
-            completer.complete(new Token(Token.tkRightShift));
+            completer.complete(new HetimaToken(HetimaToken.tkRightShift));
           }).catchError((e){
             _parser.readFromCommand(greterThanEqual).then((List<List<int>> v){
-              completer.complete(new Token(Token.tkGraterThanEqualSign));              
+              completer.complete(new HetimaToken(HetimaToken.tkGraterThanEqualSign));              
             }).catchError((e){
-              completer.complete(new Token(Token.tkGraterThanSign));
+              completer.complete(new HetimaToken(HetimaToken.tkGraterThanSign));
             });
           });
           break;
         case 0x2f:
           // /
           _parser.pop();
-          completer.complete(new Token(Token.tkSlash));
+          completer.complete(new HetimaToken(HetimaToken.tkSlash));
           break;
         case 0x7e:
           // ~
           _parser.push();
           _parser.getPeek(1).then((List<int> v) {
             if(v[0] == 0x3d) {// =
-              completer.complete(new Token(Token.tkNotEqual));
+              completer.complete(new HetimaToken(HetimaToken.tkNotEqual));
               _parser.pop();
             } else {
-              completer.complete(new Token(Token.tkTilde));
+              completer.complete(new HetimaToken(HetimaToken.tkTilde));
               _parser.back();
               _parser.pop();
             }
@@ -198,10 +200,10 @@ class Lexer {
           _parser.push();
           _parser.getPeek(1).then((List<int> v) {
             if(v[0] == 0x3a) {// ::
-              completer.complete(new Token(Token.tkDoubleColon));
+              completer.complete(new HetimaToken(HetimaToken.tkDoubleColon));
               _parser.pop();
             } else {
-              completer.complete(new Token(Token.tkColon));
+              completer.complete(new HetimaToken(HetimaToken.tkColon));
               _parser.back();
               _parser.pop();
             }
@@ -209,11 +211,33 @@ class Lexer {
             completer.completeError(e);
           });
           break;
-        case 0x22: case 0x39: 
+        case 0x22: case 0x27: 
           // " '
+          _parser.back();
+          _parser.pop();
+          normalString().then((List<int> v){
+            completer.complete(new HetimaToken.fromList(HetimaToken.tkString, v));            
+          }).catchError((e) {
+            completer.completeError(e);
+          });
           break;
         case 0x2e:
           // .
+          _parser.push();
+          _parser.readByte().then((int v){
+            if(v == 0x2e) {
+              _parser.readByte().then((int v){
+                
+              });
+            } else if(0x30 <= v && v<=0x39){
+              _parser.back();
+              _parser.pop();
+            } else {
+              _parser.back();
+              _parser.pop();
+              completer.complete(new HetimaToken(HetimaToken.tkDot));
+            }
+          });
           break;
         case 0x30:case 0x31:case 0x32:case 0x33:case 0x34: 
         case 0x35:case 0x36:case 0x37:case 0x38:case 0x39:
