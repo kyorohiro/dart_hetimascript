@@ -31,7 +31,7 @@ void script00() {
      });
     });
 
-    test('test2', () {
+    test('test3', () {
      String sc = """[[test1]][[test2]]""";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
      HetimaLexer lexer = new HetimaLexer.create(b);
@@ -43,7 +43,7 @@ void script00() {
      });
     });
     
-    test('test3', () {
+    test('test4', () {
      String sc = "\"aa\"\"bb\"";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
      HetimaLexer lexer = new HetimaLexer.create(b);
@@ -55,7 +55,7 @@ void script00() {
      });
     });
     
-    test('test3', () {
+    test('test5', () {
      String sc = "\"aabb";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
      HetimaLexer lexer = new HetimaLexer.create(b);
@@ -63,6 +63,37 @@ void script00() {
        expect(true,false);
      }).catchError((e){
        expect(true,true);
+     });
+    });
+
+    test('test6 hexnumber 1', () {
+     String sc = "0xff";
+     heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
+     HetimaLexer lexer = new HetimaLexer.create(b);
+     return lexer.hexNumber().then((num v){
+       expect(v,255);
+     }).catchError((e){
+       expect(true,false);
+     });
+    });
+    test('test6 number .5', () {
+     String sc = ".5";
+     heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
+     HetimaLexer lexer = new HetimaLexer.create(b);
+     return lexer.normalNumber().then((num v){
+       expect(v,0.5);
+     }).catchError((e){
+       expect(true,false);
+     });
+    });
+    test('test6 hexnumber 2', () {
+     String sc = "0x.5";
+     heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
+     HetimaLexer lexer = new HetimaLexer.create(b);
+     return lexer.hexNumber().then((num v){
+       expect(v,0.5);
+     }).catchError((e){
+       expect(true,false);
      });
     });
   });
