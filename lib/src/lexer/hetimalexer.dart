@@ -20,11 +20,9 @@ class HetimaLexer {
       if (HetimaToken.spaceSign.contains(v)) {
         _parser.pop();
         completer.complete(new HetimaToken(HetimaToken.tkSpace));
-        return;
       } else if (HetimaToken.crlfSign.contains(v)) {
         _parser.pop();
         completer.complete(new HetimaToken(HetimaToken.tkCrlf));
-        return;
       } else if (HetimaToken.numberBeginSign.contains(v)) {
         _parser.back();
         _parser.pop();
@@ -33,7 +31,6 @@ class HetimaLexer {
         }).catchError((e) {
           completer.completeError(new Exception());
         });
-        return;
       } else if (HetimaToken.nameBeginSign.contains(v)) {
         _parser.back();
         _parser.pop();
@@ -42,11 +39,9 @@ class HetimaLexer {
         }).catchError((e) {
           completer.completeError(new Exception());
         });
-        return;
       } else if (HetimaToken.singleConvertMap.containsKey(v)) {
         _parser.pop();
         completer.complete(new HetimaToken(HetimaToken.singleConvertMap[v]));
-        return;
       } else if (HetimaToken.stringBeginSign.contains(v)) {
         _parser.back();
         _parser.pop();
@@ -55,7 +50,6 @@ class HetimaLexer {
         }).catchError((e) {
           completer.completeError(e);
         });
-        return;
       } else if (0x2d == v) {
         // "-"
         _parser.back();
@@ -66,19 +60,16 @@ class HetimaLexer {
           _parser.resetIndex(_parser.getInedx() + 1);
           completer.complete(new HetimaToken(HetimaToken.tkMinus));
         });
-        return;
       } else if (0x5b == v) {
         // "["
         _parser.back();
         _parser.pop();
-        // "["
         longString().then((List<int> v) {
           completer.complete(new HetimaToken.fromList(HetimaToken.tkString, v));
         }).catchError((e) {
           _parser.resetIndex(_parser.getInedx() + 1);
           completer.complete(new HetimaToken(HetimaToken.tkOpeingBracket));
         });
-        return;
       } else if (0x3d == v) {
         // =
         _parser.pop();
