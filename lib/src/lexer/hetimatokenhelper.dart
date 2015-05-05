@@ -45,23 +45,11 @@ class HetimaTokenHelper {
 
     _parser.push();
     _parser.readFromCommand(number.done()).then((List<List<int>> v) {
-      if (v.length != 4) {
+      if (v.length != 4 || (v[0].length == 0 && v[1].length == 0 && v[2].length == 0 && v[3].length == 0)) {
         _parser.back();
         _parser.pop();
         completer.completeError(new Exception());
         return;
-      }
-      {
-        int lenght = 0;
-        for (List<int> i in v) {
-          lenght += i.length;
-        }
-        if (lenght == 0) {
-          _parser.back();
-          _parser.pop();
-          completer.completeError(new Exception());
-          return;
-        }
       }
       List<int> ret = [];
       ret.addAll(v[1]);
@@ -114,46 +102,36 @@ class HetimaTokenHelper {
         .pop();
 
     _parser.readFromCommand(hexNumber.done()).then((List<List<int>> v) {
-      if (v.length != 4) {
+      if (v.length != 4 || (v[0].length == 0 && v[1].length == 0 && v[2].length == 0 && v[3].length == 0)) {
         completer.completeError(new Exception());
         return;
       }
-      {
-        int lenght = 0;
-        for (List<int> i in v) {
-          lenght += i.length;
-        }
-        if (lenght == 0) {
-          completer.completeError(new Exception());
-          return;
-        }
-      }
 
-      int v1 = 0;
+      int integerPart = 0;
       {
         if (v[1].length == 0) {} else {
           List<int> ret = [];
           ret.addAll(conv.UTF8.encode("0x"));
           ret.addAll(v[1]);
-          v1 = num.parse(conv.UTF8.decode(ret));
+          integerPart = num.parse(conv.UTF8.decode(ret));
         }
       }
-      int v2 = 0;
+      int decimalPart = 0;
       {
         if (v[3].length == 0) {} else {
           List<int> ret = [];
           ret.addAll(conv.UTF8.encode("0x"));
           ret.addAll(v[3]);
-          v2 = num.parse(conv.UTF8.decode(ret));
+          decimalPart = num.parse(conv.UTF8.decode(ret));
         }
       }
-      String vv =  "";
+      String numberPart =  "";
       if(v[2].length == 0) {
-        vv = v1.toString();
+        numberPart = integerPart.toString();
       } else {
-        vv = v1.toString() + "." + v2.toString();        
+        numberPart = integerPart.toString() + "." + decimalPart.toString();        
       }
-      num retV = num.parse(vv);
+      num retV = num.parse(numberPart);
       if (v[0] == 0x2d) {
         retV = -1 * retV;
       }
