@@ -77,7 +77,7 @@ class HetimaToken {
     0x4a,0x4b,0x4c,0x4d,0x4e,0x4f,
     0x50,0x51,0x52,0x52,0x54,0x55,0x56,0x57,0x58,0x59,0x5a];
 
-  static final Map<int, int> toConMap = {
+  static final Map<int, int> singleConvertMap = {
     0x2b:HetimaToken.tkPulus,
     0x2a:HetimaToken.tkAsterisk,
     0x2f:HetimaToken.tkSlash,
@@ -403,39 +403,39 @@ class HetimaTokenHelper {
     return completer.future;
   }
   
-  async.Future<String> commentLong(hregex.RegexEasyParser _parser) {
-    async.Completer<String> completer = new async.Completer();
+  async.Future<List<int>> comment(hregex.RegexEasyParser _parser) {
+    async.Completer<List<int>> completer = new async.Completer();
     _parser.push();
-    _parser.nextString("--[[").then((String v) {
-      return _parser.nextStringByEnd("]]").then((String v) {
-        return _parser.nextString("]]").then((String k) {
-          _parser.pop();
-          completer.complete(v);
-        });
-      });
-    }).catchError((e) {
-      _parser.back();
+    hregex.RegexBuilder longComment = new hregex.RegexBuilder();
+    longComment
+        .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("--[[")))
+        .push(true)
+        .addRegexLeaf(new hregex.StarPattern.fromCommand(new hregex.UncharacterCommand(conv.UTF8.encode("]]"))))
+        .pop()
+        .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("]]")));
+    hregex.RegexBuilder shortComment = new hregex.RegexBuilder();
+    shortComment
+        .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("--")))
+        .push(true)
+        .addRegexLeaf(new hregex.StarPattern.fromCommand(new hregex.UnmatchByteCommand(conv.UTF8.encode("\r\n\0"))))
+        .pop();
+    
+    _parser.readFromCommand(longComment.done()).then((List<List<int>> v) {
       _parser.pop();
-      completer.completeError(e);
+      completer.complete(v[0]);
+    }).catchError((e) {
+      _parser.readFromCommand(shortComment.done()).then((List<List<int>> v){
+        completer.complete(v[0]);
+        _parser.pop();          
+      }).catchError((e){
+        _parser.back();
+        _parser.pop();
+        completer.completeError(e);        
+      });
     });
     return completer.future;
   }
 
-  async.Future<List<int>> commentShort(hregex.RegexEasyParser _parser) {
-    async.Completer<List<int>> completer = new async.Completer();
-    _parser.push();
-    _parser.nextString("--").then((String v) {
-      return _parser.nextBytePatternByUnmatch(new heti.EasyParserIncludeMatcher([_cv('\n'), _cv('\r')]), false).then((List<int> v) {
-        completer.complete(v);
-      });
-    }).catchError((e) {
-      completer.completeError(e);
-    });
-    return completer.future;
-  }
-  
-  static int _cv(String v) {
-    return conv.UTF8.encode(v)[0];
-  }
+
 }
 

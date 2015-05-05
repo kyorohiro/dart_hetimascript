@@ -9,8 +9,6 @@ class HetimaLexer {
     _parser = new hregex.RegexEasyParser(builder);
   }
 
-
-
   //
   async.Future<HetimaToken> lexer() {
     async.Completer<HetimaToken> completer = new async.Completer();
@@ -33,7 +31,7 @@ class HetimaLexer {
           completer.completeError(new Exception());
         });
         return;
-      } else if(HetimaToken.nameBeginSign.contains(v)) {
+      } else if (HetimaToken.nameBeginSign.contains(v)) {
         _parser.back();
         _parser.pop();
         name().then((List<int> v) {
@@ -42,9 +40,9 @@ class HetimaLexer {
           completer.completeError(new Exception());
         });
         return;
-      } else if(HetimaToken.toConMap.containsKey(v)){
+      } else if (HetimaToken.singleConvertMap.containsKey(v)) {
         _parser.pop();
-        completer.complete(new HetimaToken(HetimaToken.toConMap[v]));
+        completer.complete(new HetimaToken(HetimaToken.singleConvertMap[v]));
         return;
       }
 
@@ -54,14 +52,11 @@ class HetimaLexer {
             // "-"
             _parser.back();
             _parser.pop();
-            commentLong().then((String comment) {
-              completer.complete(new HetimaToken.fromString(HetimaToken.tkComment, comment));
-            }).catchError((e) {
-              return commentShort();
-            }).then((List<int> comment) {
+            comment().then((List<int> comment) {
               completer.complete(new HetimaToken.fromList(HetimaToken.tkComment, comment));
-            }).catchError((e) {
-              completer.complete(new HetimaToken(HetimaToken.tkMinus));
+            }).catchError((e){
+              _parser.resetIndex(_parser.getInedx()+1);
+              completer.complete(new HetimaToken(HetimaToken.tkMinus));              
             });
           }
           return;
@@ -240,12 +235,8 @@ class HetimaLexer {
     return _helper.name(_parser);
   }
 
-  async.Future<String> commentLong() {
-    return _helper.commentLong(_parser);
-  }
-
-  async.Future<List<int>> commentShort() {
-    return _helper.commentShort(_parser);
+  async.Future<List<int>> comment() {
+    return _helper.comment(_parser);
   }
 
   async.Future<num> number() {

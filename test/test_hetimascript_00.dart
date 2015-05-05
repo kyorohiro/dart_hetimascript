@@ -14,7 +14,7 @@ void script00() {
      String sc = """--test\n--test2\r\n """;
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
      HetimaLexer lexer = new HetimaLexer.create(b);
-     return lexer.commentShort().then((List<int> v) {
+     return lexer.comment().then((List<int> v) {
        expect(conv.UTF8.decode(v), "test");
      });
     });
@@ -23,11 +23,11 @@ void script00() {
      String sc = """--[[test1]]--[[test2]]""";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
      HetimaLexer lexer = new HetimaLexer.create(b);
-     return lexer.commentLong().then((String v) {
-       expect(v, "test1");
-       return lexer.commentLong();
-     }).then((String v) {
-       expect(v, "test2");
+     return lexer.comment().then((List<int> v) {
+       expect(conv.UTF8.decode(v), "test1");
+       return lexer.comment();
+     }).then((List<int> v) {
+       expect(conv.UTF8.decode(v), "test2");
      });
     });
 
@@ -96,13 +96,14 @@ void script00() {
        expect(true,false);
      });
     });
+    
   });
 }
 
 void script01() {
   group('script02', () {
     test('test1', () {
-     String sc = """--test\n--test2\r\n """;
+     String sc = """--test\n--test2\r\n--test2""";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
      HetimaLexer lexer = new HetimaLexer.create(b);
      return lexer.lexer().then((HetimaToken t) {
@@ -117,6 +118,11 @@ void script01() {
      }).then((HetimaToken t) {
        expect(t.kind, HetimaToken.tkCrlf);  
        return lexer.lexer();
+     }).then((HetimaToken t) {
+       expect(t.kind, HetimaToken.tkCrlf);  
+       return lexer.lexer();
+     }).then((HetimaToken t) {
+       expect(t.kind, HetimaToken.tkComment);
      });
     });
     
