@@ -7,3 +7,5 @@ import 'dart:async' as async;
 
 part 'src/lexer/hetimalexer.dart';
 part 'src/lexer/hetimatoken.dart';
+part 'src/lexer/hetimatokenhelper.dart';
+
