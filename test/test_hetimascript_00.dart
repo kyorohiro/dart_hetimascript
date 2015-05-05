@@ -35,9 +35,9 @@ void script00() {
      String sc = """[[test1]][[test2]]""";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
      HetimaLexer lexer = new HetimaLexer.create(b);
-     return lexer.longStringA().then((List<int> v) {
+     return lexer.longString().then((List<int> v) {
        expect(conv.UTF8.decode(v), "test1");
-       return lexer.longStringA();
+       return lexer.longString();
      }).then((List<int> v) {
        expect(conv.UTF8.decode(v), "test2");
      });

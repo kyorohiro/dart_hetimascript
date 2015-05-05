@@ -238,47 +238,40 @@ class HetimaTokenHelper {
     return completer.future;
   }
 
-  async.Future<List<int>> longStringA(hregex.RegexEasyParser _parser) {
+  async.Future<List<int>> longString(hregex.RegexEasyParser _parser) {
     async.Completer<List<int>> completer = new async.Completer();
     _parser.push();
-    hregex.RegexBuilder builder = new hregex.RegexBuilder();
-    builder
+    hregex.RegexBuilder patternA = new hregex.RegexBuilder();
+    patternA
         .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("[[")))
         .push(true)
         .addRegexLeaf(new hregex.StarPattern.fromCommand(new hregex.UncharacterCommand(conv.UTF8.encode("]]"))))
         .pop()
         .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("]]")));
-    _parser.readFromCommand(builder.done()).then((List<List<int>> v) {
-      _parser.pop();
-      completer.complete(v[0]);
-    }).catchError((e) {
-      _parser.back();
-      _parser.pop();
-      completer.completeError(e);
-    });
-    return completer.future;
-  }
-
-  async.Future<List<int>> longStringB(hregex.RegexEasyParser _parser) {
-    async.Completer<List<int>> completer = new async.Completer();
-    _parser.push();
-    hregex.RegexBuilder builder = new hregex.RegexBuilder();
-    builder
+    hregex.RegexBuilder patternB = new hregex.RegexBuilder();
+    patternB
         .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("[==[")))
         .push(true)
         .addRegexLeaf(new hregex.StarPattern.fromCommand(new hregex.UncharacterCommand(conv.UTF8.encode("]==]"))))
         .pop()
         .addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("]==]")));
-    _parser.readFromCommand(builder.done()).then((List<List<int>> v) {
+    
+    _parser.readFromCommand(patternA.done()).then((List<List<int>> v) {
       _parser.pop();
       completer.complete(v[0]);
     }).catchError((e) {
-      _parser.back();
-      _parser.pop();
-      completer.completeError(e);
+      _parser.readFromCommand(patternB.done()).then((List<List<int>> v) {
+        _parser.pop();
+        completer.complete(v[0]);
+      }).catchError((e){
+        _parser.back();
+        _parser.pop();
+        completer.completeError(e);        
+      });
     });
     return completer.future;
   }
+
 
   async.Future<List<int>> name(hregex.RegexEasyParser _parser) {
     async.Completer<List<int>> completer = new async.Completer();

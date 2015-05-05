@@ -63,12 +63,8 @@ class HetimaLexer {
             _parser.back();
             _parser.pop();
             // "["
-            longStringA().then((List<int> v) {
+            longString().then((List<int> v) {
               completer.complete(new HetimaToken.fromList(HetimaToken.tkString, v));
-            }).catchError((e) {
-              return longStringB().then((List<int> v) {
-                completer.complete(new HetimaToken.fromList(HetimaToken.tkString, v));
-              });
             }).catchError((e) {
               completer.complete(new HetimaToken(HetimaToken.tkOpeingBracket));
             });
@@ -244,11 +240,7 @@ class HetimaLexer {
     return _helper.normalString(_parser);
   }
 
-  async.Future<List<int>> longStringA() {
-    return _helper.longStringA(_parser);
-  }
-
-  async.Future<List<int>> longStringB() {
-    return _helper.longStringB(_parser);
+  async.Future<List<int>> longString() {
+    return _helper.longString(_parser);
   }
 }
