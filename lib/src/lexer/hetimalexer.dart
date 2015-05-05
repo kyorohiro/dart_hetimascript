@@ -237,7 +237,7 @@ class HetimaLexer {
   }
 
   async.Future<List<int>> normalString() {
-    return _helper.normalString(_parser);
+    return _helper.shortString(_parser);
   }
 
   async.Future<List<int>> longString() {

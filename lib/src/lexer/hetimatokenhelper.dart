@@ -164,7 +164,7 @@ class HetimaTokenHelper {
     return completer.future;
   }
 
-  async.Future<List<int>> normalString(hregex.RegexEasyParser _parser) {
+  async.Future<List<int>> shortString(hregex.RegexEasyParser _parser) {
     async.Completer<List<int>> completer = new async.Completer();
     _parser.push();
     List<int> ret = [];
