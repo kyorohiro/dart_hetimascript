@@ -1,6 +1,5 @@
 part of hetimascript;
 
-
 class HetimaLexer {
   List<HetimaToken> tokenList = [];
   hregex.RegexEasyParser _parser = null;
@@ -10,30 +9,36 @@ class HetimaLexer {
     _parser = new hregex.RegexEasyParser(builder);
   }
 
+  // " " "\f" "\t" "\v"
+  static final List<int> spaceSign = [0x20, 0x0c, 0x09, 0x0b];
+  static final List<int> crlfSign = [0x0a, 0x0d];
+  static final List<int> numberBeginSign = [0x30,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39];
+
   //
   async.Future<HetimaToken> lexer() {
     async.Completer<HetimaToken> completer = new async.Completer();
     _parser.push();
     _parser.readByte().then((int v) {
+      if (spaceSign.contains(v)) {      
+        _parser.pop();
+        completer.complete(new HetimaToken(HetimaToken.tkSpace));
+        return;
+      } else if(crlfSign.contains(v)) {
+        _parser.pop();
+        completer.complete(new HetimaToken(HetimaToken.tkCrlf));
+        return;
+      } else if(numberBeginSign.contains(v)) {
+        _parser.back();
+        _parser.pop();
+        number().then((int num) {
+          completer.complete(new HetimaToken.fromNumber(HetimaToken.tkNumber, v));
+        }).catchError((e) {
+          completer.completeError(new Exception());
+        });
+        return;
+      }
+
       switch (v) {
-        case 0x20:
-        case 0x0c:
-        case 0x09:
-        case 0x0b:
-          {
-            // " " "\f" "\t" "\v"
-            _parser.pop();
-            completer.complete(new HetimaToken(HetimaToken.tkSpace));
-          }
-          break;
-        case 0x0a:
-        case 0x0d:
-          {
-            // "\r" "\n"
-            _parser.pop();
-            completer.complete(new HetimaToken(HetimaToken.tkCrlf));
-          }
-          break;
         case 0x2d:
           {
             // "-"
@@ -176,7 +181,7 @@ class HetimaLexer {
                 _parser.pop();
                 _parser.pop();
                 _parser.pop();
-              }).catchError((e){
+              }).catchError((e) {
                 _parser.back();
                 _parser.pop();
                 _parser.pop();
@@ -189,15 +194,15 @@ class HetimaLexer {
               _parser.pop();
               _parser.back();
               _parser.pop();
-              
+
               _parser.push();
-              number().then((num v){
-                completer.complete(new HetimaToken.fromNumber(HetimaToken.tkNumber,v));
+              number().then((num v) {
+                completer.complete(new HetimaToken.fromNumber(HetimaToken.tkNumber, v));
                 _parser.pop();
-              }).catchError((e){
+              }).catchError((e) {
                 completer.completeError(new Exception());
                 _parser.back();
-                _parser.pop();                
+                _parser.pop();
               });
             } else {
               _parser.back();
@@ -205,27 +210,9 @@ class HetimaLexer {
               _parser.pop();
               completer.complete(new HetimaToken(HetimaToken.tkDot));
             }
-          }).catchError((e){
+          }).catchError((e) {
             _parser.pop();
-            completer.complete(new HetimaToken(HetimaToken.tkDot));            
-          });
-          break;
-        case 0x30:
-        case 0x31:
-        case 0x32:
-        case 0x33:
-        case 0x34:
-        case 0x35:
-        case 0x36:
-        case 0x37:
-        case 0x38:
-        case 0x39:
-          _parser.back();
-          _parser.pop();
-          number().then((int num) {
-            completer.complete(new HetimaToken.fromNumber(HetimaToken.tkNumber,v));
-          }).catchError((e){
-            completer.completeError(new Exception());
+            completer.complete(new HetimaToken(HetimaToken.tkDot));
           });
           break;
         case 0x2b:
@@ -255,7 +242,7 @@ class HetimaLexer {
         case 0x28:
           _parser.pop();
           completer.complete(new HetimaToken(HetimaToken.tkLeftParen));
-          break;          
+          break;
         case 0x29:
           _parser.pop();
           completer.complete(new HetimaToken(HetimaToken.tkRightParen));
@@ -284,16 +271,73 @@ class HetimaLexer {
           _parser.pop();
           completer.complete(new HetimaToken(HetimaToken.tkSemicolon));
           break;
-        case 0x30:case 0x31:case 0x32:case 0x33:case 0x34:case 0x35:case 0x36:case 0x37:case 0x38: case 0x39:
-        case 0x61:case 0x62:case 0x63:case 0x64:case 0x65:case 0x66:case 0x67:case 0x68:case 0x69:case 0x6a:case 0x6b:case 0x6c:case 0x6d:case 0x6e:case 0x6f:
-        case 0x70:case 0x71:case 0x72:case 0x72:case 0x74:case 0x75:case 0x76:case 0x77:case 0x78:case 0x79:case 0x7a:
-        case 0x41:case 0x42:case 0x43:case 0x44:case 0x45:case 0x46:case 0x47:case 0x48:case 0x49:case 0x4a:case 0x4b:case 0x4c:case 0x4d:case 0x4e:case 0x4f:
-        case 0x50:case 0x51:case 0x52:case 0x52:case 0x54:case 0x55:case 0x56:case 0x57:case 0x58:case 0x59:case 0x5a:
+        case 0x30:
+        case 0x31:
+        case 0x32:
+        case 0x33:
+        case 0x34:
+        case 0x35:
+        case 0x36:
+        case 0x37:
+        case 0x38:
+        case 0x39:
+        case 0x61:
+        case 0x62:
+        case 0x63:
+        case 0x64:
+        case 0x65:
+        case 0x66:
+        case 0x67:
+        case 0x68:
+        case 0x69:
+        case 0x6a:
+        case 0x6b:
+        case 0x6c:
+        case 0x6d:
+        case 0x6e:
+        case 0x6f:
+        case 0x70:
+        case 0x71:
+        case 0x72:
+        case 0x72:
+        case 0x74:
+        case 0x75:
+        case 0x76:
+        case 0x77:
+        case 0x78:
+        case 0x79:
+        case 0x7a:
+        case 0x41:
+        case 0x42:
+        case 0x43:
+        case 0x44:
+        case 0x45:
+        case 0x46:
+        case 0x47:
+        case 0x48:
+        case 0x49:
+        case 0x4a:
+        case 0x4b:
+        case 0x4c:
+        case 0x4d:
+        case 0x4e:
+        case 0x4f:
+        case 0x50:
+        case 0x51:
+        case 0x52:
+        case 0x52:
+        case 0x54:
+        case 0x55:
+        case 0x56:
+        case 0x57:
+        case 0x58:
+        case 0x59:
+        case 0x5a:
           _parser.back();
           _parser.pop();
           name().then((List<int> v) {
             completer.complete(new HetimaToken.fromList(HetimaToken.tkName, v));
-          }).catchError((e){
+          }).catchError((e) {
             completer.completeError(new Exception());
           });
           break;
@@ -314,61 +358,15 @@ class HetimaLexer {
   }
 
   async.Future<List<int>> name() {
-    async.Completer<List<int>> completer = new async.Completer();
-    hregex.RegexBuilder name = new hregex.RegexBuilder();
-    name.push(true)
-   .addRegexCommand(new hregex.MatchByteCommand(
-    [0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6a,0x6b,0x6c,0x6d,0x6e,0x6f,
-     0x70,0x71,0x72,0x72,0x74,0x75,0x76,0x77,0x78,0x79,0x7a,
-     0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4a,0x4b,0x4c,0x4d,0x4e,0x4f,
-     0x50,0x51,0x52,0x52,0x54,0x55,0x56,0x57,0x58,0x59,0x5a]))
-    .addRegexLeaf(new hregex.StarPattern.fromCommand(new hregex.MatchByteCommand(
-        [0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
-         0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6a,0x6b,0x6c,0x6d,0x6e,0x6f,
-         0x70,0x71,0x72,0x72,0x74,0x75,0x76,0x77,0x78,0x79,0x7a,
-         0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4a,0x4b,0x4c,0x4d,0x4e,0x4f,
-         0x50,0x51,0x52,0x52,0x54,0x55,0x56,0x57,0x58,0x59,0x5a])))
-    .pop();
-    _parser.push();
-    _parser.readFromCommand(name.done()).then((List<List<int>> v){
-      _parser.pop();
-      completer.complete(v[0]);
-    }).catchError((e){
-      _parser.back();
-      _parser.pop();
-      completer.completeError(e);
-    });
-    return completer.future;
+    return _helper.name(_parser);
   }
+
   async.Future<String> commentLong() {
-    async.Completer<String> completer = new async.Completer();
-    _parser.push();
-    _parser.nextString("--[[").then((String v) {
-      return _parser.nextStringByEnd("]]").then((String v) {
-        return _parser.nextString("]]").then((String k) {
-          _parser.pop();
-          completer.complete(v);
-        });
-      });
-    }).catchError((e) {
-      _parser.back();
-      _parser.pop();
-      completer.completeError(e);
-    });
-    return completer.future;
+    return _helper.commentLong(_parser);
   }
 
   async.Future<List<int>> commentShort() {
-    async.Completer<List<int>> completer = new async.Completer();
-    _parser.push();
-    _parser.nextString("--").then((String v) {
-      return _parser.nextBytePatternByUnmatch(new heti.EasyParserIncludeMatcher([_cv('\n'), _cv('\r')]), false).then((List<int> v) {
-        completer.complete(v);
-      });
-    }).catchError((e) {
-      completer.completeError(e);
-    });
-    return completer.future;
+    return _helper.commentShort(_parser);
   }
 
   async.Future<num> number() {

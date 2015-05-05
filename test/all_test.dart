@@ -9,5 +9,5 @@ import 'test_hetimascript_00.dart' as hetimascript_00;
 
 main() {
   hetimascript_00.script00();
- // hetimascript_00.script01();
+  hetimascript_00.script01();
 }
