@@ -47,18 +47,15 @@ class HetimaLexer {
       }
 
       switch (v) {
-        case 0x2d:
-          {
-            // "-"
-            _parser.back();
-            _parser.pop();
-            comment().then((List<int> comment) {
-              completer.complete(new HetimaToken.fromList(HetimaToken.tkComment, comment));
-            }).catchError((e){
-              _parser.resetIndex(_parser.getInedx()+1);
-              completer.complete(new HetimaToken(HetimaToken.tkMinus));              
-            });
-          }
+        case 0x2d: // "-"
+          _parser.back();
+          _parser.pop();
+          comment().then((List<int> comment) {
+            completer.complete(new HetimaToken.fromList(HetimaToken.tkComment, comment));
+          }).catchError((e) {
+            _parser.resetIndex(_parser.getInedx() + 1);
+            completer.complete(new HetimaToken(HetimaToken.tkMinus));
+          });
           return;
         case 0x5b:
           {
