@@ -175,6 +175,22 @@ void script01() {
        expect(v.value[0], 0.52);
      });
     });
+    
+    
+    test('script06', () {
+     String sc = "a123 abc";
+     heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
+     HetimaLexer lexer = new HetimaLexer.create(b);
+     return lexer.lexer().then((HetimaToken v) {
+       expect(v.kind, HetimaToken.tkName);
+       return lexer.lexer();
+     }).then((HetimaToken v) {
+       expect(v.kind, HetimaToken.tkSpace);
+       return lexer.lexer();
+     }).then((HetimaToken v) {
+       expect(v.kind, HetimaToken.tkName);
+     });
+    });
   });
 }
 

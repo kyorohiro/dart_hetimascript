@@ -31,16 +31,30 @@ class HetimaToken {
   static const tkLessThanSign = 12; //<
   static const tkLessThanEqualSign = 13; // <=
   static const tkLeftShift = 12; //<<
-  static const tkSlash = 13;
+  static const tkSlash = 13; // /
   static const tkNotEqual = 14; // ~=
   static const tkTilde = 15; // ~
   static const tkColon = 16; // :
   static const tkDoubleColon = 17; // ::
-  static const tkDot = 18;
+  static const tkDot = 18; // .
   static const tkConcat = 19; // ..
   static const tkDots = 20; // ...
-  static const tkNumber = 21;
-
+  static const tkNumber = 21; // 
+  static const tkPulus = 22; //+
+  static const tkAsterisk = 23; // *
+  static const tkPercent = 24;// %
+  static const tkCaret = 25; // ^
+  static const tkHashMark = 26; //#
+  static const tkLeftParen = 27; // (
+  static const tkRightParen = 28; // )
+  static const tkLeftBracket = 29; //[
+  static const tkRightBracket = 30; //]
+  static const tkLeftBrace = 31;//{
+  static const tkRightBrace = 32;//}
+  static const tkSemicolon = 33;// ;
+  static const tkComma= 34;//
+  static const tkName= 35;//
+  static const tkEOF= -1;//
   int kind = tkNone;
   List<int> value = [];
   HetimaToken(int kind) {
@@ -281,9 +295,87 @@ class HetimaLexer {
         case 0x37:
         case 0x38:
         case 0x39:
+          _parser.back();
+          _parser.pop();
+          number().then((int num) {
+            completer.complete(new HetimaToken.fromNumber(HetimaToken.tkNumber,v));
+          }).catchError((e){
+            completer.completeError(new Exception());
+          });
+          break;
+        case 0x2b:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkPulus));
+          break;
+        case 0x2a:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkAsterisk));
+          break;
+        case 0x2f:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkSlash));
+          break;
+        case 0x25:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkPercent));
+          break;
+        case 0x5e:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkCaret));
+          break;
+        case 0x23:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkHashMark));
+          break;
+        case 0x28:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkLeftParen));
+          break;          
+        case 0x29:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkRightParen));
+          break;
+        case 0x7b:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkLeftBrace));
+          break;
+        case 0x7d:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkRightBrace));
+          break;
+        case 0x5b:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkRightBracket));
+          break;
+        case 0x5d:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkRightBracket));
+          break;
+        case 0x3b:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkSemicolon));
+          break;
+        case 0x2c:
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkSemicolon));
+          break;
+        case 0x30:case 0x31:case 0x32:case 0x33:case 0x34:case 0x35:case 0x36:case 0x37:case0x38: case 0x39:
+        case 0x61:case 0x62:case 0x63:case 0x64:case 0x65:case 0x66:case 0x67:case 0x68:case 0x69:case 0x6a:case 0x6b:case 0x6c:case 0x6d:case 0x6e:case 0x6f:
+        case 0x70:case 0x71:case 0x72:case 0x72:case 0x74:case 0x75:case 0x76:case 0x77:case 0x78:case 0x79:case 0x7a:
+        case 0x41:case 0x42:case 0x43:case 0x44:case 0x45:case 0x46:case 0x47:case 0x48:case 0x49:case 0x4a:case 0x4b:case 0x4c:case 0x4d:case 0x4e:case 0x4f:
+        case 0x50:case 0x51:case 0x52:case 0x52:case 0x54:case 0x55:case 0x56:case 0x57:case 0x58:case 0x59:case 0x5a:
+          _parser.back();
+          _parser.pop();
+          name().then((List<int> v) {
+            completer.complete(new HetimaToken.fromList(HetimaToken.tkName, v));
+          }).catchError((e){
+            completer.completeError(new Exception());
+          });
           break;
         case 0xff:
           // -1
+          _parser.pop();
+          completer.complete(new HetimaToken(HetimaToken.tkEOF));
           break;
         default:
           completer.completeError([]);
@@ -296,6 +388,33 @@ class HetimaLexer {
     return conv.UTF8.encode(v)[0];
   }
 
+  async.Future<List<int>> name() {
+    async.Completer<List<int>> completer = new async.Completer();
+    hregex.RegexBuilder name = new hregex.RegexBuilder();
+    name.push(true)
+   .addRegexCommand(new hregex.MatchByteCommand(
+    [0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6a,0x6b,0x6c,0x6d,0x6e,0x6f,
+     0x70,0x71,0x72,0x72,0x74,0x75,0x76,0x77,0x78,0x79,0x7a,
+     0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4a,0x4b,0x4c,0x4d,0x4e,0x4f,
+     0x50,0x51,0x52,0x52,0x54,0x55,0x56,0x57,0x58,0x59,0x5a]))
+    .addRegexLeaf(new hregex.StarPattern.fromCommand(new hregex.MatchByteCommand(
+        [0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
+         0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6a,0x6b,0x6c,0x6d,0x6e,0x6f,
+         0x70,0x71,0x72,0x72,0x74,0x75,0x76,0x77,0x78,0x79,0x7a,
+         0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4a,0x4b,0x4c,0x4d,0x4e,0x4f,
+         0x50,0x51,0x52,0x52,0x54,0x55,0x56,0x57,0x58,0x59,0x5a])))
+    .pop();
+    _parser.push();
+    _parser.readFromCommand(name.done()).then((List<List<int>> v){
+      _parser.pop();
+      completer.complete(v[0]);
+    }).catchError((e){
+      _parser.back();
+      _parser.pop();
+      completer.completeError(e);
+    });
+    return completer.future;
+  }
   async.Future<String> commentLong() {
     async.Completer<String> completer = new async.Completer();
     _parser.push();
