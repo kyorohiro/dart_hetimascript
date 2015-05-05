@@ -13,6 +13,9 @@ class HetimaLexer {
   async.Future<HetimaToken> lexer() {
     async.Completer<HetimaToken> completer = new async.Completer();
     _parser.push();
+
+    //
+    //
     _parser.readByte().then((int v) {
       if (HetimaToken.spaceSign.contains(v)) {
         _parser.pop();
@@ -53,116 +56,55 @@ class HetimaLexer {
           completer.completeError(e);
         });
         return;
+      } else if (0x2d == v) {
+        // "-"
+        _parser.back();
+        _parser.pop();
+        comment().then((List<int> comment) {
+          completer.complete(new HetimaToken.fromList(HetimaToken.tkComment, comment));
+        }).catchError((e) {
+          _parser.resetIndex(_parser.getInedx() + 1);
+          completer.complete(new HetimaToken(HetimaToken.tkMinus));
+        });
+        return;
+      } else if (0x5b == v) {
+        // "["
+        _parser.back();
+        _parser.pop();
+        // "["
+        longString().then((List<int> v) {
+          completer.complete(new HetimaToken.fromList(HetimaToken.tkString, v));
+        }).catchError((e) {
+          _parser.resetIndex(_parser.getInedx() + 1);
+          completer.complete(new HetimaToken(HetimaToken.tkOpeingBracket));
+        });
+        return;
       }
 
       switch (v) {
-        case 0x2d: // "-"
-          _parser.back();
-          _parser.pop();
-          comment().then((List<int> comment) {
-            completer.complete(new HetimaToken.fromList(HetimaToken.tkComment, comment));
-          }).catchError((e) {
-            _parser.resetIndex(_parser.getInedx() + 1);
-            completer.complete(new HetimaToken(HetimaToken.tkMinus));
-          });
-          return;
-        case 0x5b:
-          {
-            // "["
-            _parser.back();
-            _parser.pop();
-            // "["
-            longString().then((List<int> v) {
-              completer.complete(new HetimaToken.fromList(HetimaToken.tkString, v));
-            }).catchError((e) {
-              completer.complete(new HetimaToken(HetimaToken.tkOpeingBracket));
-            });
-          }
-          break;
         case 0x3d:
-          // "="
-          _parser.back();
           _parser.pop();
-          _parser.readFromCommand((new hregex.RegexBuilder()).addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("=="))).done()).then((List<List<int>> v) {
-            completer.complete(new HetimaToken(HetimaToken.tkEqualEqual));
-          }).catchError((e) {
-            completer.complete(new HetimaToken(HetimaToken.tkEqual));
-          });
-
+          _matchFromNextChar(<int, int>{0x3d:HetimaToken.tkEqualEqual}, HetimaToken.tkEqual, _parser, completer);
           break;
         case 0x3c:
           // <
-          _parser.back();
           _parser.pop();
-
-          List<hregex.RegexCommand> leftshift = (new hregex.RegexBuilder()).addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("<<"))).done();
-          List<hregex.RegexCommand> greterThanEqual = (new hregex.RegexBuilder()).addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("<="))).done();
-          _parser.readFromCommand(leftshift).then((List<List<int>> v) {
-            completer.complete(new HetimaToken(HetimaToken.tkLeftShift));
-          }).catchError((e) {
-            _parser.readFromCommand(greterThanEqual).then((List<List<int>> v) {
-              completer.complete(new HetimaToken(HetimaToken.tkLessThanEqualSign));
-            }).catchError((e) {
-              completer.complete(new HetimaToken(HetimaToken.tkLessThanSign));
-            });
-          });
+          _matchFromNextChar(<int, int>{0x3c: HetimaToken.tkLeftShift, 0x3d:HetimaToken.tkLessThanEqualSign}, HetimaToken.tkLessThanSign, _parser, completer);
           break;
         case 0x3e:
           // >
-          _parser.back();
           _parser.pop();
-
-          List<hregex.RegexCommand> leftshift = (new hregex.RegexBuilder()).addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode(">>"))).done();
-          List<hregex.RegexCommand> greterThanEqual = (new hregex.RegexBuilder()).addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode(">="))).done();
-
-          _parser.readFromCommand(leftshift).then((List<List<int>> v) {
-            completer.complete(new HetimaToken(HetimaToken.tkRightShift));
-          }).catchError((e) {
-            _parser.readFromCommand(greterThanEqual).then((List<List<int>> v) {
-              completer.complete(new HetimaToken(HetimaToken.tkGraterThanEqualSign));
-            }).catchError((e) {
-              completer.complete(new HetimaToken(HetimaToken.tkGraterThanSign));
-            });
-          });
-          break;
-        case 0x2f:
-          // /
-          _parser.pop();
-          completer.complete(new HetimaToken(HetimaToken.tkSlash));
+          _matchFromNextChar(<int, int>{0x3e: HetimaToken.tkRightShift, 0x3d:HetimaToken.tkGraterThanEqualSign}, HetimaToken.tkGraterThanSign, _parser, completer);
           break;
         case 0x7e:
           // ~
-          _parser.push();
-          _parser.getPeek(1).then((List<int> v) {
-            if (v[0] == 0x3d) {
-              // =
-              completer.complete(new HetimaToken(HetimaToken.tkNotEqual));
-              _parser.pop();
-            } else {
-              completer.complete(new HetimaToken(HetimaToken.tkTilde));
-              _parser.back();
-              _parser.pop();
-            }
-          }).catchError((e) {
-            completer.completeError(e);
-          });
+          _parser.pop();
+          _matchFromNextChar(<int, int>{0x3d: HetimaToken.tkNotEqual}, HetimaToken.tkTilde, _parser, completer);
           break;
         case 0x3a:
           // :
-          _parser.push();
-          _parser.getPeek(1).then((List<int> v) {
-            if (v[0] == 0x3a) {
-              // ::
-              completer.complete(new HetimaToken(HetimaToken.tkDoubleColon));
-              _parser.pop();
-            } else {
-              completer.complete(new HetimaToken(HetimaToken.tkColon));
-              _parser.back();
-              _parser.pop();
-            }
-          }).catchError((e) {
-            completer.completeError(e);
-          });
+          _parser.pop();
+          _matchFromNextChar(<int, int>{0x3a:HetimaToken.tkDoubleColon}, HetimaToken.tkColon, _parser, completer);
           break;
         case 0x2e:
           // .
@@ -217,8 +159,23 @@ class HetimaLexer {
     return completer.future;
   }
 
-  static int _cv(String v) {
-    return conv.UTF8.encode(v)[0];
+  void _matchFromNextChar(Map<int, int> expectIfFound, int expectIfNotFound, hregex.RegexEasyParser _parser, async.Completer<HetimaToken> completer) {
+    _parser.push();
+    _parser.readByte().then((int w) {
+      if (expectIfFound.containsKey(w)) {
+        completer.complete(new HetimaToken(expectIfFound[w]));
+        _parser.pop();
+      } else {
+        completer.complete(new HetimaToken(expectIfNotFound));
+        _parser.back();
+        _parser.pop();
+      }
+    }).catchError((e) {
+      //<
+      completer.complete(new HetimaToken(expectIfNotFound));
+      _parser.back();
+      _parser.pop();
+    });
   }
 
   async.Future<List<int>> name() {
