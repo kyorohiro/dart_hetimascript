@@ -70,7 +70,7 @@ void script00() {
      String sc = "0xff";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
      HetimaLexer lexer = new HetimaLexer.create(b);
-     return lexer.hexNumber().then((num v){
+     return lexer.number().then((num v){
        expect(v,255);
      }).catchError((e){
        expect(true,false);
@@ -80,7 +80,7 @@ void script00() {
      String sc = ".5";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
      HetimaLexer lexer = new HetimaLexer.create(b);
-     return lexer.normalNumber().then((num v){
+     return lexer.number().then((num v){
        expect(v,0.5);
      }).catchError((e){
        expect(true,false);
@@ -90,7 +90,7 @@ void script00() {
      String sc = "0x.5";
      heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
      HetimaLexer lexer = new HetimaLexer.create(b);
-     return lexer.hexNumber().then((num v){
+     return lexer.number().then((num v){
        expect(v,0.5);
      }).catchError((e){
        expect(true,false);
