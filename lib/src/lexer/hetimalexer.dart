@@ -84,17 +84,17 @@ class HetimaLexer {
       switch (v) {
         case 0x3d:
           _parser.pop();
-          _matchFromNextChar(<int, int>{0x3d:HetimaToken.tkEqualEqual}, HetimaToken.tkEqual, _parser, completer);
+          _matchFromNextChar(<int, int>{0x3d: HetimaToken.tkEqualEqual}, HetimaToken.tkEqual, _parser, completer);
           break;
         case 0x3c:
           // <
           _parser.pop();
-          _matchFromNextChar(<int, int>{0x3c: HetimaToken.tkLeftShift, 0x3d:HetimaToken.tkLessThanEqualSign}, HetimaToken.tkLessThanSign, _parser, completer);
+          _matchFromNextChar(<int, int>{0x3c: HetimaToken.tkLeftShift, 0x3d: HetimaToken.tkLessThanEqualSign}, HetimaToken.tkLessThanSign, _parser, completer);
           break;
         case 0x3e:
           // >
           _parser.pop();
-          _matchFromNextChar(<int, int>{0x3e: HetimaToken.tkRightShift, 0x3d:HetimaToken.tkGraterThanEqualSign}, HetimaToken.tkGraterThanSign, _parser, completer);
+          _matchFromNextChar(<int, int>{0x3e: HetimaToken.tkRightShift, 0x3d: HetimaToken.tkGraterThanEqualSign}, HetimaToken.tkGraterThanSign, _parser, completer);
           break;
         case 0x7e:
           // ~
@@ -104,48 +104,37 @@ class HetimaLexer {
         case 0x3a:
           // :
           _parser.pop();
-          _matchFromNextChar(<int, int>{0x3a:HetimaToken.tkDoubleColon}, HetimaToken.tkColon, _parser, completer);
+          _matchFromNextChar(<int, int>{0x3a: HetimaToken.tkDoubleColon}, HetimaToken.tkColon, _parser, completer);
           break;
         case 0x2e:
           // .
-          _parser.push();
-          _parser.readByte().then((int v) {
-            if (v == 0x2e) {
-              _parser.push();
-              hregex.RegexBuilder b = new hregex.RegexBuilder().addRegexCommand(new hregex.CharCommand.createFromList([0x2e]));
-              _parser.readFromCommand(b.done()).then((List<List<int>> v) {
-                completer.complete(new HetimaToken(HetimaToken.tkDots));
-                _parser.pop();
-                _parser.pop();
-                _parser.pop();
-              }).catchError((e) {
-                _parser.back();
-                _parser.pop();
-                _parser.pop();
-                _parser.pop();
-                completer.complete(new HetimaToken(HetimaToken.tkConcat));
-              });
-            } else if (0x30 <= v && v <= 0x39) {
-              // todo
-              _parser.back();
-              _parser.pop();
-              _parser.back();
-              _parser.pop();
+          hregex.RegexBuilder b = new hregex.RegexBuilder().push(true)
+              //.([0-9])
+              .addRegexCommand(new hregex.MatchByteCommand([0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39]))
+              // ...
+              .or().addRegexCommand(new hregex.CharCommand.createFromList([0x2e, 0x2e]))
+              // ..
+              .or().addRegexCommand(new hregex.CharCommand.createFromList([0x2e]));
 
-              _parser.push();
-              number().then((num v) {
-                completer.complete(new HetimaToken.fromNumber(HetimaToken.tkNumber, v));
-                _parser.pop();
-              }).catchError((e) {
-                completer.completeError(new Exception());
-                _parser.back();
-                _parser.pop();
-              });
-            } else {
-              _parser.back();
-              _parser.pop();
+          _parser.readFromCommand(b.done()).then((List<List<int>> w) {
+            if (w[0].length == 0) {
               _parser.pop();
               completer.complete(new HetimaToken(HetimaToken.tkDot));
+            } else if (w[0].length == 1) {
+              if (0x30<=w[0][0] && w[0][0] <= 0x39) {
+                // number
+                _parser.back();
+                _parser.pop();
+                number().then((v) {
+                  completer.complete(new HetimaToken.fromNumber(HetimaToken.tkNumber, v));
+                });
+              } else {
+                _parser.pop();
+                completer.complete(new HetimaToken(HetimaToken.tkConcat));
+              }
+            } else if(w[0].length == 2){
+              _parser.pop();
+              completer.complete(new HetimaToken(HetimaToken.tkDots));
             }
           }).catchError((e) {
             _parser.pop();
@@ -171,7 +160,6 @@ class HetimaLexer {
         _parser.pop();
       }
     }).catchError((e) {
-      //<
       completer.complete(new HetimaToken(expectIfNotFound));
       _parser.back();
       _parser.pop();

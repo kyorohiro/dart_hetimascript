@@ -45,7 +45,7 @@ class HetimaTokenHelper {
 
     _parser.push();
     _parser.readFromCommand(number.done()).then((List<List<int>> v) {
-      if (v.length != 4 || (v[0].length == 0 && v[1].length == 0 && v[2].length == 0 && v[3].length == 0)) {
+      if (v.length != 4 || (v[0].length == 0 && v[1].length == 0 && v[3].length == 0)) {
         _parser.back();
         _parser.pop();
         completer.completeError(new Exception());
@@ -102,7 +102,7 @@ class HetimaTokenHelper {
         .pop();
 
     _parser.readFromCommand(hexNumber.done()).then((List<List<int>> v) {
-      if (v.length != 4 || (v[0].length == 0 && v[1].length == 0 && v[2].length == 0 && v[3].length == 0)) {
+      if (v.length != 4 || (v[0].length == 0 && v[1].length == 0 && v[3].length == 0)) {
         completer.completeError(new Exception());
         return;
       }
