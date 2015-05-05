@@ -100,6 +100,34 @@ void script00() {
   });
 }
 
+void lexerComment() {
+  group('lexer -', () {
+    test('test1', () {
+     String sc = """--test\n--test2\r\n--test2""";
+     heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
+     HetimaLexer lexer = new HetimaLexer.create(b);
+     return lexer.lexer().then((HetimaToken t) {
+       expect(t.kind, HetimaToken.tkComment);
+       return lexer.lexer();
+     }).then((HetimaToken t) {
+       expect(t.kind, HetimaToken.tkCrlf);  
+       return lexer.lexer();
+     }).then((HetimaToken t) {
+       expect(t.kind, HetimaToken.tkComment);
+       return lexer.lexer();
+     }).then((HetimaToken t) {
+       expect(t.kind, HetimaToken.tkCrlf);  
+       return lexer.lexer();
+     }).then((HetimaToken t) {
+       expect(t.kind, HetimaToken.tkCrlf);  
+       return lexer.lexer();
+     }).then((HetimaToken t) {
+       expect(t.kind, HetimaToken.tkComment);
+     });
+    });
+  });
+}
+
 void script01() {
   group('script02', () {
     test('test1', () {

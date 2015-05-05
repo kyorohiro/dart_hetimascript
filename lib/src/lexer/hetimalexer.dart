@@ -44,6 +44,15 @@ class HetimaLexer {
         _parser.pop();
         completer.complete(new HetimaToken(HetimaToken.singleConvertMap[v]));
         return;
+      } else if (HetimaToken.stringBeginSign.contains(v)) {
+        _parser.back();
+        _parser.pop();
+        normalString().then((List<int> v) {
+          completer.complete(new HetimaToken.fromList(HetimaToken.tkString, v));
+        }).catchError((e) {
+          completer.completeError(e);
+        });
+        return;
       }
 
       switch (v) {
@@ -88,7 +97,6 @@ class HetimaLexer {
 
           List<hregex.RegexCommand> leftshift = (new hregex.RegexBuilder()).addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("<<"))).done();
           List<hregex.RegexCommand> greterThanEqual = (new hregex.RegexBuilder()).addRegexCommand(new hregex.CharCommand.createFromList(conv.UTF8.encode("<="))).done();
-
           _parser.readFromCommand(leftshift).then((List<List<int>> v) {
             completer.complete(new HetimaToken(HetimaToken.tkLeftShift));
           }).catchError((e) {
@@ -152,17 +160,6 @@ class HetimaLexer {
               _parser.back();
               _parser.pop();
             }
-          }).catchError((e) {
-            completer.completeError(e);
-          });
-          break;
-        case 0x22:
-        case 0x27:
-          // " '
-          _parser.back();
-          _parser.pop();
-          normalString().then((List<int> v) {
-            completer.complete(new HetimaToken.fromList(HetimaToken.tkString, v));
           }).catchError((e) {
             completer.completeError(e);
           });
