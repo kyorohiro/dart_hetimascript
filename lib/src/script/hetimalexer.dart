@@ -39,6 +39,7 @@ class HetimaToken {
   static const tkDot = 18;
   static const tkConcat = 19; // ..
   static const tkDots = 20; // ...
+  static const tkNumber = 21;
 
   int kind = tkNone;
   List<int> value = [];
@@ -49,6 +50,11 @@ class HetimaToken {
   HetimaToken.fromString(int kind, String text) {
     this.kind = kind;
     this.value = conv.UTF8.encode(text);
+  }
+
+  HetimaToken.fromNumber(int kind, num v) {
+    this.kind = kind;
+    this.value = [v];
   }
 
   HetimaToken.fromList(int kind, List<int> text) {
@@ -224,15 +230,45 @@ class HetimaLexer {
           _parser.push();
           _parser.readByte().then((int v) {
             if (v == 0x2e) {
-              _parser.readByte().then((int v) {});
+              _parser.push();
+              hregex.RegexBuilder b = new hregex.RegexBuilder().addRegexCommand(new hregex.CharCommand.createFromList([0x2e]));
+              _parser.readFromCommand(b.done()).then((List<List<int>> v) {
+                completer.complete(new HetimaToken(HetimaToken.tkDots));
+                _parser.pop();
+                _parser.pop();
+                _parser.pop();
+              }).catchError((e){
+                _parser.back();
+                _parser.pop();
+                _parser.pop();
+                _parser.pop();
+                completer.complete(new HetimaToken(HetimaToken.tkConcat));
+              });
             } else if (0x30 <= v && v <= 0x39) {
+              // todo
               _parser.back();
               _parser.pop();
+              _parser.back();
+              _parser.pop();
+              
+              _parser.push();
+              number().then((num v){
+                completer.complete(new HetimaToken.fromNumber(HetimaToken.tkNumber,v));
+                _parser.pop();
+              }).catchError((e){
+                completer.completeError(new Exception());
+                _parser.back();
+                _parser.pop();                
+              });
             } else {
               _parser.back();
               _parser.pop();
+              _parser.pop();
               completer.complete(new HetimaToken(HetimaToken.tkDot));
             }
+          }).catchError((e){
+            _parser.pop();
+            completer.complete(new HetimaToken(HetimaToken.tkDot));            
           });
           break;
         case 0x30:
@@ -291,6 +327,20 @@ class HetimaLexer {
     return completer.future;
   }
 
+  async.Future<num> number() {
+    async.Completer<int> completer = new async.Completer();
+    normalNumber().then((num v){
+      completer.complete(v);
+    }).catchError((e){
+      hexNumber().then((num v){
+        completer.complete(v);
+      }).catchError((e){
+        completer.completeError(e);
+      });
+    });
+    return completer.future;
+  }
+
   async.Future<num> normalNumber() {
     async.Completer<int> completer = new async.Completer();
     hregex.RegexBuilder number = new hregex.RegexBuilder();
@@ -343,7 +393,9 @@ class HetimaLexer {
         retV = -1 * retV;
       }
       completer.complete(retV);
-    }).catchError((e) {});
+    }).catchError((e) {
+      completer.completeError(e);
+    });
     return completer.future;
   }
 

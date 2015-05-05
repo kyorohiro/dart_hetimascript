@@ -148,7 +148,33 @@ void script01() {
     });
 
     
-
+    test('script05', () {
+     String sc = ". .. ... .52";
+     heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
+     HetimaLexer lexer = new HetimaLexer.create(b);
+     return lexer.lexer().then((HetimaToken v) {
+       expect(v.kind, HetimaToken.tkDot);
+       return lexer.lexer();
+     }).then((HetimaToken v) {
+       expect(v.kind, HetimaToken.tkSpace);
+       return lexer.lexer();
+     }).then((HetimaToken v) {
+       expect(v.kind, HetimaToken.tkConcat);
+       return lexer.lexer();
+     }).then((HetimaToken v) {
+       expect(v.kind, HetimaToken.tkSpace);
+       return lexer.lexer();
+     }).then((HetimaToken v) {
+       expect(v.kind, HetimaToken.tkDots);
+       return lexer.lexer();
+     }).then((HetimaToken v) {
+       expect(v.kind, HetimaToken.tkSpace);
+       return lexer.lexer();
+     }).then((HetimaToken v) {
+       expect(v.kind, HetimaToken.tkNumber);
+       expect(v.value[0], 0.52);
+     });
+    });
   });
 }
 
