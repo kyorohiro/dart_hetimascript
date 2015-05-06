@@ -5,9 +5,11 @@ library dart_hetimascript.test;
 
 import 'package:unittest/unittest.dart';
 import 'package:hetimascript/hetimascript.dart';
-import 'test_hetimascript_00.dart' as hetimascript_00;
+import 'test_lexer.dart' as hetimascript_00;
+import 'test_parser.dart' as test_parser;
 
 main() {
   hetimascript_00.script00();
   hetimascript_00.script01();
+  test_parser.script00();
 }

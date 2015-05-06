@@ -9,13 +9,31 @@ class HetimaLexer {
     _parser = new hregex.RegexEasyParser(builder);
   }
 
+  HetimaLexer.fromString(String text) {
+    _parser = new hregex.RegexEasyParser(new heti.ArrayBuilder.fromList(conv.UTF8.encode(text)));
+  }
+
   //
+  async.Future<HetimaToken> next() {
+    async.Completer<HetimaToken> completer = new async.Completer();
+    loop() {
+      return lexer().then((HetimaToken v) {
+        if(v.kind == HetimaToken.tkSpace || v.kind == HetimaToken.tkComment) {
+          return loop();
+        } else {
+          completer.complete(v);
+        }
+      }).catchError((e){
+        completer.completeError(e);
+      });
+    }
+    ;
+    loop();
+    return completer.future;
+  }
   async.Future<HetimaToken> lexer() {
     async.Completer<HetimaToken> completer = new async.Completer();
     _parser.push();
-
-    //
-    //
     _parser.readByte().then((int v) {
       if (HetimaToken.spaceSign.contains(v)) {
         _parser.pop();

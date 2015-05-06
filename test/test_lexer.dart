@@ -1,4 +1,4 @@
-library dart_hetimascript_test;
+library test_lexer;
 
 import 'package:hetimascript/hetimascript.dart';
 import 'package:unittest/unittest.dart';

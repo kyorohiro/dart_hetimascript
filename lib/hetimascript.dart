@@ -8,4 +8,5 @@ import 'dart:async' as async;
 part 'src/lexer/hetimalexer.dart';
 part 'src/lexer/hetimatoken.dart';
 part 'src/lexer/hetimatokenhelper.dart';
-
+part 'src/parser/hetimaparser.dart';
+part 'src/engine/hetimaengine.dart';
