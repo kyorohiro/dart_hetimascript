@@ -5,7 +5,7 @@ class HetimaLexer {
   hregex.RegexEasyParser _parser = null;
   HetimaTokenHelper _helper = new HetimaTokenHelper();
 
-  HetimaLexer.create(heti.HetimaBuilder builder) {
+  HetimaLexer.create(heti.HetimaReader builder) {
     _parser = new hregex.RegexEasyParser(builder);
   }
 
