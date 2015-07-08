@@ -7,6 +7,7 @@ import 'dart:async';
 
 import '../lexer/hetimalexer.dart';
 import '../lexer/hetimatoken.dart';
+import './hetimaast.dart';
 
 class HetimaObject {}
 
@@ -22,6 +23,8 @@ class NumberObject extends HetimaObject {
 }
 
 class StringObject extends HetimaObject {}
+
+class TableObject extends HetimaObject {}
 
 class PrintFunction extends HetimaObject {
   PrintFunction();
@@ -100,32 +103,3 @@ class HetimaInterpreter {
   }
 }
 
-class HetimaAST {
-  HetimaToken token;
-  List<HetimaAST> children = [];
-
-  int get tokenId => token.kind;
-  List<int> get tokenValue => token.value;
-  String get tokenName => conv.UTF8.decode(token.value);
-
-  HetimaAST(HetimaToken token, [List children = null]) {
-    this.token = token;
-    if (children != null) {
-      for (Object o in children) {
-        if (o is HetimaAST) {
-          addChild(o);
-        } else if (o is HetimaToken) {
-          addChildToken(o);
-        }
-      }
-    }
-  }
-
-  addChild(HetimaAST node) {
-    children.add(node);
-  }
-
-  addChildToken(HetimaToken t) {
-    children.add(new HetimaAST(t));
-  }
-}
