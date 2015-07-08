@@ -72,11 +72,11 @@ class HetimaInterpreter {
         case HetimaToken.tkNumber:
           return new NumberObject(t.tokenValue[0]);
         case HetimaToken.tkAsterisk:
-          return execute(t.children[0]).then((c){
-            return execute(t.children[1]).then((d){
-              return new NumberObject((c as NumberObject).value+(d as NumberObject).value);
+          return execute(t.children[0]).then((c) {
+            return execute(t.children[1]).then((d) {
+              return new NumberObject((c as NumberObject).value * (d as NumberObject).value);
             });
-        });
+          });
       }
     });
   }
@@ -90,13 +90,15 @@ class HetimaAST {
   List<int> get tokenValue => token.value;
   String get tokenName => conv.UTF8.decode(token.value);
 
-  HetimaAST(HetimaToken token, [List children]) {
+  HetimaAST(HetimaToken token, [List children = null]) {
     this.token = token;
-    for (Object o in children) {
-      if (o is HetimaAST) {
-        addChild(o);
-      } else if (o is HetimaToken) {
-        addChildToken(o);
+    if (children != null) {
+      for (Object o in children) {
+        if (o is HetimaAST) {
+          addChild(o);
+        } else if (o is HetimaToken) {
+          addChildToken(o);
+        }
       }
     }
   }
