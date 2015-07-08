@@ -10,3 +10,4 @@ export 'src/lexer/hetimatoken.dart';
 export 'src/lexer/hetimatokenhelper.dart';
 export 'src/parser/hetimaparser.dart';
 export 'src/engine/hetimaengine.dart';
+export 'src/engine/hetimaast.dart';

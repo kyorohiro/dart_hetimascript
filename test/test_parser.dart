@@ -17,8 +17,8 @@ void script00() {
       heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
       HetimaLexer lexer = new HetimaLexer.create(b);
       HetimaParser parser = new HetimaParser.create(lexer);
-      return parser.execute(lexer).then((int v){
-        
+      return parser.execute(lexer).then((HetimaAST v){
+        ;
       });
     });
   });
