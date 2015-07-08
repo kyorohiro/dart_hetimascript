@@ -71,6 +71,12 @@ class HetimaInterpreter {
 
         case HetimaToken.tkNumber:
           return new NumberObject(t.tokenValue[0]);
+        case HetimaToken.tkAsterisk:
+          return execute(t.children[0]).then((c){
+            return execute(t.children[1]).then((d){
+              return new NumberObject((c as NumberObject).value+(d as NumberObject).value);
+            });
+        });
       }
     });
   }
