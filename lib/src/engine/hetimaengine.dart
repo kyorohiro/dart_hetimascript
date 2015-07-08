@@ -36,12 +36,31 @@ class ObjectManager {
 }
 
 class HetimaInterpreter {
-  Future play(HetimaAST t) {}
+  Future play(HetimaAST t) {
+    return new Future(() {
+      if (t.tokenId == HetimaToken.tkEqual) {
+        t.children[0] == t.children[1].token.value[0];
+      }
+    });
+  }
+
+  Future execute(HetimaAST t) {
+    return new Future(() {
+      switch (t.tokenId) {
+        case HetimaToken.tkEqual:
+          return execute(t.children[1]).then((a) {});
+        case HetimaToken.tkNumber:
+          return 1;
+      }
+    });
+  }
 }
 
 class HetimaAST {
   HetimaToken token;
   List<HetimaAST> children = [];
+
+  int get tokenId => token.kind;
 
   HetimaAST(HetimaToken token, [List children]) {
     this.token = token;

@@ -18,7 +18,9 @@ void script00() {
           [new HetimaToken.fromNumber(HetimaToken.tkNumber, 2),
            new HetimaToken.fromNumber(HetimaToken.tkNumber, 3)]
       ));
-      interpreter.play(root);
+      return interpreter.play(root).then((_){
+        ;
+      });
     });
   });
 }
