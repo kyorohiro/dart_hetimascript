@@ -31,13 +31,13 @@ class HetimaParser {
   }
 
   Future<HetimaToken> nextToken() {
-    if(_index < _lookahead.length) {
-      return new Future((){
+    if (_index < _lookahead.length) {
+      return new Future(() {
         return _lookahead[_index];
       });
     } else {
       return _lexer.next().then((HetimaToken t) {
-        if(_stack.length != 0) {
+        if (_stack.length != 0) {
           _lookahead.add(t);
         }
         return t;
@@ -53,7 +53,42 @@ class HetimaParser {
     Completer<HetimaAST> c = new Completer();
     grammerStat().then((_) {
       c.complete();
-    }).catchError((e){c.completeError(e);});
+    }).catchError((e) {
+      c.completeError(e);
+    });
+    return c.future;
+  }
+
+  //  stat ::=  varlist `=´ explist |
+  // functioncall |
+  // do block end |
+  // while exp do block end |
+  // repeat block until exp |
+  // if exp then block {elseif exp then block} [else block] end |
+  // for Name `=´ exp `,´ exp [`,´ exp] do block end |
+  // for namelist in explist do block end |
+  // function funcname funcbody |
+  // local function Name funcbody |
+  // local namelist [`=´ explist]
+  Future grammerStat() {
+    push();
+    Completer c = new Completer();
+    grammerVar().then((a) {
+      return nextToken().then((HetimaToken t) {
+        if (t.kind != HetimaToken.tkEqual) {
+          throw {};
+        } else {
+          return grammerExp().then((b) {
+            pop();
+            c.complete(new HetimaAST(t, [a, b]));
+          });
+        }
+      });
+    }).catchError((e) {
+      back();
+      pop();
+      c.completeError(e);
+    });
     return c.future;
   }
 
@@ -74,44 +109,27 @@ class HetimaParser {
     });
   }
 
-  //  stat ::=  varlist `=´ explist |
-  // functioncall |
-  // do block end |
-  // while exp do block end |
-  // repeat block until exp |
-  // if exp then block {elseif exp then block} [else block] end |
-  // for Name `=´ exp `,´ exp [`,´ exp] do block end |
-  // for namelist in explist do block end |
-  // function funcname funcbody |
-  // local function Name funcbody |
-  // local namelist [`=´ explist]
-  Future grammerStat() {
-    return grammerVar().then((a) {
-      
-    });
-    return _lexer.next().then((HetimaToken t) {
-      if (t.kind != HetimaToken.tkNumber) {
-        throw {};
-      }
-    });
-  }
-
   //varlist ::= var {`,´ var}
-  Future grammerVarlist() {
-    return _lexer.next().then((HetimaToken t) {
-      if (t.kind != HetimaToken.tkNumber) {
-        throw {};
-      }
-    });
-  }
+  /////////  Future grammerVarlist() {
 
   //var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
   Future grammerVar() {
-    return _lexer.next().then((HetimaToken t) {
-      if (t.kind != HetimaToken.tkNumber) {
+    push();
+    Completer c = new Completer();
+    nextToken().then((HetimaToken t) {
+      if (t.kind != HetimaToken.tkName) {
         throw {};
+      } else {
+        HetimaAST ast = new HetimaAST(t);
+        pop();
+        c.complete(ast);
       }
+    }).catchError((e) {
+      back();
+      pop();
+      c.completeError(e);
     });
+    return c.future;
   }
 
   Future grammerNumber() {
