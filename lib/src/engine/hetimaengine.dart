@@ -41,18 +41,18 @@ class ObjectManager {
   }
 
   Object setObject(String name, HetimaObject object) {
-      map[name] = object;
+    map[name] = object;
   }
 
-  Object getObject(String name,{bool isNewIfNeed:true}) {
-    if(map.containsKey(name)) {
+  Object getObject(String name, {bool isNewIfNeed: true}) {
+    if (map.containsKey(name)) {
       return map[name];
     } else {
-     // if(isNewIfNeed == true) {
-     //   return newObject(name);   
-     // } else {
-        throw {};
-     // }
+      // if(isNewIfNeed == true) {
+      //   return newObject(name);
+      // } else {
+      throw {};
+      // }
     }
   }
 }
@@ -60,20 +60,16 @@ class ObjectManager {
 class HetimaInterpreter {
   ObjectManager manager = new ObjectManager();
 
-  Future play(HetimaAST t) {
-
-  }
-
   Future execute(HetimaAST t) {
     return new Future(() {
       switch (t.tokenId) {
         case HetimaToken.tkEqual:
           return execute(t.children[1]).then((a) {
-          //
-          manager.setObject(t.children[0].tokenName, a);
-        });
+            //
+            manager.setObject(t.children[0].tokenName, a);
+          });
+
         case HetimaToken.tkNumber:
-          //
           return new NumberObject(t.tokenValue[0]);
       }
     });

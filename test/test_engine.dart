@@ -18,8 +18,10 @@ void script00() {
           [new HetimaToken.fromNumber(HetimaToken.tkNumber, 2),
            new HetimaToken.fromNumber(HetimaToken.tkNumber, 3)]
       ));
-      return interpreter.play(root).then((_){
-        ;
+      return interpreter.execute(root).then((_){
+        HetimaObject object = interpreter.manager.getObject("a");
+        expect(object is NumberObject, true);
+        expect((object as NumberObject).value, 6);
       });
     });
   });
