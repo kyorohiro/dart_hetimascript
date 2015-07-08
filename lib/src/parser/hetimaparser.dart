@@ -99,26 +99,32 @@ class HetimaParser {
     Completer c = new Completer();
     nextToken().then((HetimaToken t) {
       switch(t.kind) {
-        case HetimaToken.tkName:
-          if(t.valueAsString == "nil" || t.valueAsString == "false" || t.valueAsString == "true") {
-            
-          }
-          break;
         case HetimaToken.tkNumber:
         case HetimaToken.tkString:
         case HetimaToken.tkDots:
           break;
+        case HetimaToken.tkName:
+          if(t.valueAsString == "nil" || t.valueAsString == "false" || t.valueAsString == "true") {            
+            break;
+          }
+          throw {};
+        default:
+          throw {};
       }
+      push();
       return grammerBinop().then((a) {
         return grammerExp().then((c) {
-          
+          pop();
+          return new HetimaAST(a,[t,c]);
         });
       }).catchError((e) {
         // exp
+        back();
+        pop();
         return new HetimaAST(t);
       });
     }).then((r){
-      
+      c.complete(r);
     }).catchError((e){
       c.completeError(e);
     });
