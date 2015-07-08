@@ -14,7 +14,13 @@ class HetimaFunction extends HetimaObject {
   void act(List<HetimaObject> args) {}
 }
 
-class NumberObject extends HetimaObject {}
+class NumberObject extends HetimaObject {
+  int value = null;
+  NumberObject(int value) {
+    this.value = value;
+  }
+}
+
 class StringObject extends HetimaObject {}
 
 class PrintFunction extends HetimaObject {
@@ -33,15 +39,29 @@ class ObjectManager {
   ObjectManager() {
     map["print"] = new PrintFunction();
   }
+
+  Object setObject(String name, HetimaObject object) {
+      map[name] = object;
+  }
+
+  Object getObject(String name,{bool isNewIfNeed:true}) {
+    if(map.containsKey(name)) {
+      return map[name];
+    } else {
+     // if(isNewIfNeed == true) {
+     //   return newObject(name);   
+     // } else {
+        throw {};
+     // }
+    }
+  }
 }
 
 class HetimaInterpreter {
+  ObjectManager manager = new ObjectManager();
+
   Future play(HetimaAST t) {
-    return new Future(() {
-      if (t.tokenId == HetimaToken.tkEqual) {
-        t.children[0] == t.children[1].token.value[0];
-      }
-    });
+
   }
 
   Future execute(HetimaAST t) {
@@ -50,10 +70,11 @@ class HetimaInterpreter {
         case HetimaToken.tkEqual:
           return execute(t.children[1]).then((a) {
           //
-          //
+          manager.setObject(t.children[0].tokenName, a);
         });
         case HetimaToken.tkNumber:
-          return t.tokenValue[0];
+          //
+          return new NumberObject(t.tokenValue[0]);
       }
     });
   }
