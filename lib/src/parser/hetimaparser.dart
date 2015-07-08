@@ -33,12 +33,15 @@ class HetimaParser {
   Future<HetimaToken> nextToken() {
     if (_index < _lookahead.length) {
       return new Future(() {
-        return _lookahead[_index];
+        HetimaToken ret = _lookahead[_index];
+        _index++;
+        return ret;
       });
     } else {
       return _lexer.next().then((HetimaToken t) {
         if (_stack.length != 0) {
           _lookahead.add(t);
+          _index++;
         }
         return t;
       });

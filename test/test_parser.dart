@@ -10,10 +10,11 @@ String sample1 = """
 --[[Hello Lua]]
 
 """;
-void script00() {
+
+void main() {
   group('parser', () {
-    test('t01', () {
-      String sc = "a=1+2";
+    test('a=1', () {
+      String sc = "a=1";
       heti.ArrayBuilder b = new heti.ArrayBuilder.fromList(conv.UTF8.encode(sc), true);
       HetimaLexer lexer = new HetimaLexer.create(b);
       HetimaParser parser = new HetimaParser.create(lexer);

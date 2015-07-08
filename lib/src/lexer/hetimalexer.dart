@@ -25,17 +25,17 @@ class HetimaLexer {
     async.Completer<HetimaToken> completer = new async.Completer();
     loop() {
       return lexer().then((HetimaToken v) {
-        if(v.kind == HetimaToken.tkSpace || v.kind == HetimaToken.tkComment) {
+        if (v.kind == HetimaToken.tkSpace || v.kind == HetimaToken.tkComment) {
           return loop();
         } else {
           completer.complete(v);
         }
-      }).catchError((e){
-        completer.completeError(e);
       });
     }
     ;
-    loop();
+    loop().catchError((e) {
+      completer.completeError(e);
+    });
     return completer.future;
   }
   async.Future<HetimaToken> lexer() {
@@ -152,6 +152,8 @@ class HetimaLexer {
       } else {
         completer.completeError([]);
       }
+    }).catchError((e){
+      completer.completeError(e);
     });
     return completer.future;
   }

@@ -6,9 +6,8 @@ import 'package:hetimacore/hetimacore.dart' as heti;
 import 'dart:convert' as conv;
 import 'dart:typed_data' as tdata;
 
-void main() => script00();
 
-void script00() {
+void main() {
   group('script01', () {
     test('test1', () {
      String sc = """--test\n--test2\r\n """;
@@ -98,9 +97,7 @@ void script00() {
     });
     
   });
-}
 
-void lexerComment() {
   group('lexer -', () {
     test('test1', () {
      String sc = """--test\n--test2\r\n--test2""";
@@ -126,9 +123,7 @@ void lexerComment() {
      });
     });
   });
-}
 
-void script01() {
   group('script02', () {
     test('test1', () {
      String sc = """--test\n--test2\r\n--test2""";
