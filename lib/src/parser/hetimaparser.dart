@@ -104,8 +104,29 @@ class HetimaParser {
   //  `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ |
   //  and | or
   Future grammerBinop() {
-    return _lexer.next().then((HetimaToken t) {
-      push();
+    return nextToken().then((HetimaToken t) {
+      switch (t.kind) {
+        case HetimaToken.tkName:
+          if (t.valueAsString == "and" || t.valueAsString == "or") {
+            return new HetimaAST(t);
+          }
+          break;
+        case HetimaToken.tkPulus: //+
+        case HetimaToken.tkMinus: //-
+        case HetimaToken.tkAsterisk: //*
+        case HetimaToken.tkSlash: // /
+        case HetimaToken.tkCaret: // ^
+        case HetimaToken.tkPercent: // %
+        case HetimaToken.tkConcat: // ..
+        case HetimaToken.tkLessThanSign: // <
+        case HetimaToken.tkLessThanEqualSign: // <=
+        case HetimaToken.tkGraterThanSign: // >
+        case HetimaToken.tkGraterThanEqualSign: // >=
+        case HetimaToken.tkEqualEqual: // ==
+        case HetimaToken.tkNotEqual: // ~=
+          return new HetimaAST(t);
+      }
+      throw {};
     });
   }
 
