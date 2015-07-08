@@ -48,9 +48,12 @@ class HetimaInterpreter {
     return new Future(() {
       switch (t.tokenId) {
         case HetimaToken.tkEqual:
-          return execute(t.children[1]).then((a) {});
+          return execute(t.children[1]).then((a) {
+          //
+          //
+        });
         case HetimaToken.tkNumber:
-          return 1;
+          return t.tokenValue[0];
       }
     });
   }
@@ -61,6 +64,8 @@ class HetimaAST {
   List<HetimaAST> children = [];
 
   int get tokenId => token.kind;
+  List<int> get tokenValue => token.value;
+  String get tokenName => conv.UTF8.decode(token.value);
 
   HetimaAST(HetimaToken token, [List children]) {
     this.token = token;
