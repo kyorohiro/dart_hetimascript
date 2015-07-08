@@ -50,6 +50,7 @@ class HetimaToken {
   int kind = tkNone;
   List<int> value = [];
   String get valueAsString => conv.UTF8.decode(value);
+
   HetimaToken(int kind) {
     this.kind = kind;
   }

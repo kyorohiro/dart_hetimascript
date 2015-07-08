@@ -95,16 +95,43 @@ class HetimaParser {
   // exp ::=  nil | false | true | Number | String | `...´ | function |
   // prefixexp | tableconstructor | exp binop exp | unop exp
   Future grammerExp() {
-    return _lexer.next().then((HetimaToken t) {
-      push();
+    push();
+    Completer c = new Completer();
+    nextToken().then((HetimaToken t) {
+      switch(t.kind) {
+        case HetimaToken.tkName:
+          if(t.valueAsString == "nil" || t.valueAsString == "false" || t.valueAsString == "true") {
+            
+          }
+          break;
+        case HetimaToken.tkNumber:
+        case HetimaToken.tkString:
+        case HetimaToken.tkDots:
+          break;
+      }
+      return grammerBinop().then((a) {
+        return grammerExp().then((c) {
+          
+        });
+      }).catchError((e) {
+        // exp
+        return new HetimaAST(t);
+      });
+    }).then((r){
+      
+    }).catchError((e){
+      c.completeError(e);
     });
+    return c.future;
   }
 
   //binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ |
   //  `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ |
   //  and | or
   Future grammerBinop() {
-    return nextToken().then((HetimaToken t) {
+    push();
+    Completer c = new Completer();
+    nextToken().then((HetimaToken t) {
       switch (t.kind) {
         case HetimaToken.tkName:
           if (t.valueAsString == "and" || t.valueAsString == "or") {
@@ -127,7 +154,16 @@ class HetimaParser {
           return new HetimaAST(t);
       }
       throw {};
+    }).then((r) {
+      pop();
+      c.complete(r);
+    }).catchError((e) {
+      back();
+      pop();
+      c.completeError(e);
     });
+
+    return c.future;
   }
 
   //varlist ::= var {`,´ var}
