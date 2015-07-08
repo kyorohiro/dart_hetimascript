@@ -1,4 +1,11 @@
-part of hetimascript;
+library hetimascript.lexer;
+
+import 'package:hetimacore/hetimacore.dart' as heti;
+import 'package:hetimaregex/hetimaregex.dart' as hregex;
+import 'dart:convert' as conv;
+import 'dart:async' as async;
+import 'hetimatoken.dart';
+import 'hetimatokenhelper.dart';
 
 class HetimaLexer {
   List<HetimaToken> tokenList = [];

@@ -5,8 +5,8 @@ import 'package:hetimaregex/hetimaregex.dart' as hregex;
 import 'dart:convert' as conv;
 import 'dart:async' as async;
 
-part 'src/lexer/hetimalexer.dart';
-part 'src/lexer/hetimatoken.dart';
-part 'src/lexer/hetimatokenhelper.dart';
-part 'src/parser/hetimaparser.dart';
-part 'src/engine/hetimaengine.dart';
+export 'src/lexer/hetimalexer.dart';
+export 'src/lexer/hetimatoken.dart';
+export 'src/lexer/hetimatokenhelper.dart';
+export 'src/parser/hetimaparser.dart';
+export 'src/engine/hetimaengine.dart';

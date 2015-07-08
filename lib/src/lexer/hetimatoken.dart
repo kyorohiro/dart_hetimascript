@@ -1,4 +1,9 @@
-part of hetimascript;
+library hetimascript.token;
+
+import 'package:hetimacore/hetimacore.dart' as heti;
+import 'package:hetimaregex/hetimaregex.dart' as hregex;
+import 'dart:convert' as conv;
+import 'dart:async' as async;
 
 List<String> luaXTokens = ["and", "break", "do", "else", "elseif", "end", "false", "for", "function", "if", "in", "local", "nil", "not", "or", "repeat", "return", "then", "true", "until", "while"];
 
