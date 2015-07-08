@@ -15,8 +15,8 @@ class HetimaFunction extends HetimaObject {
 }
 
 class NumberObject extends HetimaObject {
-  int value = null;
-  NumberObject(int value) {
+  num value = null;
+  NumberObject(num value) {
     this.value = value;
   }
 }
@@ -75,6 +75,24 @@ class HetimaInterpreter {
           return execute(t.children[0]).then((c) {
             return execute(t.children[1]).then((d) {
               return new NumberObject((c as NumberObject).value * (d as NumberObject).value);
+            });
+          });
+        case HetimaToken.tkPulus:
+          return execute(t.children[0]).then((c) {
+            return execute(t.children[1]).then((d) {
+              return new NumberObject((c as NumberObject).value + (d as NumberObject).value);
+            });
+          });
+        case HetimaToken.tkMinus:
+          return execute(t.children[0]).then((c) {
+            return execute(t.children[1]).then((d) {
+              return new NumberObject((c as NumberObject).value - (d as NumberObject).value);
+            });
+          });
+        case HetimaToken.tkSlash:
+          return execute(t.children[0]).then((c) {
+            return execute(t.children[1]).then((d) {
+              return new NumberObject((c as NumberObject).value / (d as NumberObject).value);
             });
           });
       }
